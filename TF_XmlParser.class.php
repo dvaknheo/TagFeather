@@ -467,7 +467,7 @@ class TF_XmlParser
 	 * @param string $frag_prefix
 	 * @return array assoc
 	 */
-	public public static function ToAttrs($str,&$match_byte,$flag=self::ATTR_FRAG_COMMON,$frag_prefix="\n")
+	public static function ToAttrs($str,&$match_byte,$flag=self::ATTR_FRAG_COMMON,$frag_prefix="\n")
 	{
 		$PIpattern='<'.'\?.*?\?'.'>';
 		$ASPpattern='<'.'%.*?%'.'>';

@@ -27,10 +27,6 @@ class TF_HookObjectBase
 	{
 		$this->unreg($this->hookmanager,null,'unreg');
 	}
-	public function __destruct()
-	{
-		return;
-	}
 	public function reg($hookmanager,$tf=null,$hooktype='reg')
 	{
 		if($hookmanager){$this->hookmanager=$hookmanager;}
