@@ -1,17 +1,7 @@
 <?php
-/**
- * TagFeather
- * A Template Engine,by PHP5 .Provider Html Editor What You See What You Get;
- * @author  Dvaknheo <dvaknheo@gmail.com>
- * @license Free For Personal , if you use it to make money ,wish you to get little me.
- * @version SVN: $Id: TF_HookObjectBase.class.php 78 2008-07-27 16:15:28Z dvaknheo $
- * @link	http://www.tagfeather.com 
- * @link    http://www.dvaknheo.com
- * @copyright	2006-2008 Chen Guobing E.
- * @package TagFeather
- * @since 2006.11
- */
-class TF_HookObjectBase
+namespace TagFeather;
+
+class HookObjectBase
 {
 	protected $hooktypes=array();
 	protected $hookmanager;

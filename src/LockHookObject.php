@@ -1,5 +1,7 @@
-<?php //$Id: TF_LockHookObject.class.php 78 2008-07-27 16:15:28Z dvaknheo $
-class TF_LockHookObject extends TF_HookObjectBase
+<?php
+namespace TagFeather;
+
+class LockHookObject extends HookObjectBase
 {
 	public $lockfile='';
 	protected $hooktypes=array('postbuild','error','unreg');

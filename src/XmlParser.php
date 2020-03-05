@@ -1,20 +1,7 @@
 <?php
-/**
- * TagFeather
- * A Template Engine,by PHP5 .Provider Html Editor What You See What You Get;
- * @author  Dvaknheo <dvaknheo@gmail.com>
- * @license Free For Personal , if you use it to make money ,wish you to get little me.
- * @version SVN: $Id: TF_XmlParser.class.php 78 2008-07-27 16:15:28Z dvaknheo $
- * @link	http://www.tagfeather.com 
- * @link    http://www.dvaknheo.com
- * @copyright	2006-2008 Chen Guobing E.
- * @package TagFeather
- * @since 2006.11
- *
- * SAX Mode xml parser 
- * Bug constant of TF_XmlParser is no work;
- */
-class TF_XmlParser
+namespace TagFeather;
+
+class XmlParser
 {
 	/** use for < ? PI=//Processing Instruction ? >  */
 	const ATTR_FRAG_PI=1;
@@ -95,13 +82,6 @@ class TF_XmlParser
 		$this->timeinit=microtime(true);
 	}
 	/**
-	 * destructor
-	 */
-	public function __destruct()
-	{
-		unset($this->handle);
-	}
-	/**
 	 * call $this->handle method;
 	 *
 	 * @param callback $handle
@@ -109,6 +89,7 @@ class TF_XmlParser
 	 */
 	public function call($handle,$arg)
 	{
+        if(!$handle){return;}
 		$ret=call_user_func(array(&$this->handle,$handle),$arg);
 		$newtime=microtime(true);
 		if( $newtime-$this->timeinit > $this->timeout){
@@ -178,7 +159,7 @@ class TF_XmlParser
 			}
 		}
 	}
-	private function parse_text()
+	protected function parse_text()
 	{
 		$pos=strpos($this->data,'<');
 		if(FALSE!==$pos){
@@ -191,7 +172,7 @@ class TF_XmlParser
 		$this->call('text_handle',$text);
 		$this->current_line+=substr_count($text,"\n");
 	}
-	private function parse_tagend()
+	protected function parse_tagend()
 	{
 		$p_tagend = '/^<\/([0-9a-zA-Z_\x7f-\xff:\-]+)>/';
 		$flag=preg_match($p_tagend,$this->data,$matches);
@@ -209,7 +190,7 @@ class TF_XmlParser
 		$this->call('tagend_handle',$lasttagname);
 		array_pop($this->tagnames);		
 	}
-	private function parse_notation()
+	protected function parse_notation()
 	{
 		$data=&$this->data;
 		
@@ -249,7 +230,7 @@ class TF_XmlParser
 		$this->data=substr($this->data,1);
 		$this->call('text_handle','<');
 	}
-	private function parse_pi()
+	protected function parse_pi()
 	{
 		$PIend='?'.'>';
 		$data=&$this->data;
@@ -265,7 +246,7 @@ class TF_XmlParser
 		$this->call('pi_handle',$matchdata);
 		$this->current_line+=substr_count($matchdata,"\n");
 	}
-	private function parse_asp()
+	protected function parse_asp()
 	{
 		$ASPend='%'.'>';
 		$data=&$this->data;
@@ -281,7 +262,7 @@ class TF_XmlParser
 		$this->call('asp_handle',$matchdata);
 		$this->current_line+=substr_count($matchdata,"\n");
 	}
-	private function parse_tag()
+	protected function parse_tag()
 	{
 		$p_tagheadend='/^\s*(\/)?'.'>/s';
 		$matches=$this->parsing_attrs;
@@ -340,7 +321,7 @@ class TF_XmlParser
 			$this->call('text_handle',$headdata);
 		}
 	}
-	private function parse_script()
+	protected function parse_script()
 	{
 		$data=&$this->data;
 		
@@ -388,7 +369,7 @@ class TF_XmlParser
 	 * @param array $attrs
 	 * @return $attrs
 	 */
-	private function parse_serverattr($attrs)
+	protected function parse_serverattr($attrs)
 	{
 		$this->is_asp_pi_frag=true;
 		foreach($attrs as $key=>$str){
@@ -399,7 +380,7 @@ class TF_XmlParser
 		
 		return $attrs;
 	}
-	private function parse_serverfrag($str)
+	protected function parse_serverfrag($str)
 	{
 		if($this->stop_parse_serverfrag){return $str;}
 		$PIpattern='<'.'\?(.*?)\?'.'>';
@@ -427,7 +408,7 @@ class TF_XmlParser
 		}
 		return $str;
 	}
-	private function is_matchtagname($lasttagname)
+	protected function is_matchtagname($lasttagname)
 	{
 		$tagname=end($this->tagnames);
 		if($tagname!=$lasttagname){
@@ -436,11 +417,11 @@ class TF_XmlParser
 		}
 		return true;
 	}
-	private function error_info($info)
+	protected function error_info($info)
 	{
 		$this->error_handle($this->current_line,$info,substr($this->data,0,100));
 	}
-	private function preg_splitdata($pattern,$text)
+	protected function preg_splitdata($pattern,$text)
 	{
 		$ret=array();
 		$a=preg_split ($pattern, $text,-1,PREG_SPLIT_OFFSET_CAPTURE|PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY);

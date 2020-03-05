@@ -1,18 +1,7 @@
 <?php
-/**
- * TagFeather
- * A Template Engine,by PHP5 .Provider Html Editor What You See What You Get;
- * @author  Dvaknheo <dvaknheo@gmail.com>
- * @license Free For Personal , if you use it to make money ,wish you to get little me.
- * @version SVN: $Id: TF_Helper.class.php 78 2008-07-27 16:15:28Z dvaknheo $
- * @link	http://www.tagfeather.com 
- * @link    http://www.dvaknheo.com
- * @copyright	2006-2008 Chen Guobing E.
- * @package TagFeather
- * @since 2006.11
- */
+namespace TagFeather;
 
-class TF_Helper
+class Helper
 {
 	const PI_BEGIN="<\x3f";
 	const PI_END="\x3f>";

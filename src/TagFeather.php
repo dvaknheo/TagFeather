@@ -1,19 +1,7 @@
 <?php
-/**
- * TagFeather
- * A Template Engine,by PHP5 .Provider Html Editor What You See What You Get;
- * @author  Dvaknheo <dvaknheo@gmail.com>
- * @license Free For Personal , if you use it to make money ,wish you to get little me.
- * @version SVN: $Id: TagFeather.class.php 79 2008-07-28 09:59:45Z dvaknheo $
- * @link	http://www.tagfeather.com 
- * @link    http://www.dvaknheo.com
- * @copyright	2006-2008 Chen Guobing E.
- * @package TagFeather
- * @since 2006.11
- */
-//define('TAGFEATHER_VERSION','$Id: TagFeather.class.php 79 2008-07-28 09:59:45Z dvaknheo $');
+namespace TagFeather;
 
-class TagFeather extends TF_Builder
+class TagFeather extends Builder
 {
 	////public $feathers=array();		//$key=>$value; //no used TO Regard init version;
 	/** @var string source file to build . */

@@ -1,38 +1,7 @@
 <?php
-/**
- * TagFeather
- * A Template Engine,by PHP5 .Provider Html Editor What You See What You Get;
- * @author  Dvaknheo <dvaknheo@gmail.com>
- * @license Free For Personal , if you use it to make money ,wish you to get little me.
- * @version SVN: $Id: TF_Hooks.class.php 80 2008-07-28 15:30:21Z dvaknheo $
- * @link	http://www.tagfeather.com 
- * @link    http://www.dvaknheo.com
- * @copyright	2006-2008 Chen Guobing E.
- * @package TagFeather
- * @since 2006.11
- *
- * All this is static , these function callback  by TF_Builder;
- * All the callback hooks like this  $callback($arg,$tf,$hooktype)
- * + $arg mixed , different hook type ($hookype) is difference.
- *   $tf->V is the mirrored refer to this;
- *   you should return it if changed ,if you not return or return false.the value is $tf->V whose not changed.
- *   if you want to return false, you should use $tf->parsehook_return_real_false();
- *   - modifier : bool $is_build is need build?
- *   - error: array $error_array an array content error info;
- *   - prebuild : string data before parsing.
- *   - postbuild : string $data data after build;
- *   - tagbegin : array $attrs tag attributes in parsing begin , that time the head is cutted
- *   - tagend : array $attrs tag attributes after the end , that time the foot is cutted
- *   - text : string $text text to parse
- *   - comment : string $comment
- *   - pi : string $pi
- *   - asp : string $asp
- *   - cdata : string $cdata
- *   - notation : string $notation
- * + $tf the TagFeather object
- * + $hooktype the hooktype
- */
-class TF_Hooks
+namespace TagFeather;
+
+class Hooks
 {
 	/** if no default dest file , be the  basename $soure and end with.cache.php   */
 	public static function modifier_filename($is_build,$tf,$hooktype)

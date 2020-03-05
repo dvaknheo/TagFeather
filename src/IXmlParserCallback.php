@@ -1,5 +1,7 @@
-<?php //$Id: TF_IXmlParserCallback.class.php 78 2008-07-27 16:15:28Z dvaknheo $
-interface TF_IXmpParserCallback
+<?php
+namespace TagFeather;
+
+interface IXmlParserCallback
 {
 
 	public function asp_handle($str);
