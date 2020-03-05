@@ -1,0 +1,25 @@
+{
+    "name": "dvaknheo/tagfeather",
+    "description": "A Xml template engineer 2020",
+    "type": "library",
+    "keywords": [
+        "framework",
+		"service"
+    ],
+    "homepage": "https://www.github.com/dvaknheo/TagFeather",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "davknheo",
+            "email": "85811616@qq.com"
+        }
+    ],
+	"autoload": {
+        "psr-4": {
+            "TagFeather\\": "src"
+        }
+    },
+    "require": {
+        "php": ">=7.1.0"
+	},
+}
