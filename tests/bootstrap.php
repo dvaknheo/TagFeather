@@ -31,7 +31,7 @@ return;
 
 function GetClassTestPath($class)
 {
-    $ret=__DIR__.'/data_for_tests'.str_replace(['DuckPhp\\','\\'],['/','/'],$class).'/';
+    $ret=__DIR__.'/data_for_tests'.str_replace(['TagFeather\\','\\'],['/','/'],$class).'/';
     return $ret;
 }
 
@@ -104,7 +104,7 @@ class MyCodeCoverage
         $this->coverage->stop();
         
         $writer = new \SebastianBergmann\CodeCoverage\Report\PHP;
-        $path=substr(str_replace('\\', '/', $this->test_class), strlen('DuckPhp\\'));
+        $path=substr(str_replace('\\', '/', $this->test_class), strlen('TagFeather\\'));
         $path=__DIR__.'/test_coveragedumps/'.$path .'.php';
         $writer->process($this->coverage, $path);
         $this->coverage=null;
@@ -197,7 +197,7 @@ class TestFileGenerator
         preg_match_all('/ function (([^\(]+)\([^\)]*\))/', $data, $m);
         $funcs=$m[1];
         
-        $ns='DuckPhp\\'.str_replace('/', '\\', dirname($short_file));
+        $ns='TagFeather\\'.str_replace('/', '\\', dirname($short_file));
         $ns=str_replace('\.', '', $ns);
         if (dirname($short_file)=='.') {
             $namespace='tests';

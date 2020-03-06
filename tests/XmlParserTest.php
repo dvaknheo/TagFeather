@@ -8,9 +8,38 @@ class XmlParserTest extends \PHPUnit\Framework\TestCase
     {
         \MyCodeCoverage::G()->begin(XmlParser::class);
         
-        //code here
+        $this->do_testattrs();
         
-        //XmlParser::G()->ToAttrs($str,$match_byte);
+        $str='text<!--notation--><tag></tag><%asp%><?pi ?>annother<';;
+        XmlParser::G()->insert_data($str,true);
+        XmlParser::G()->parse();
+        
+        
+        try{
+            $str='<?xml';;
+            XmlParser::G(new XmlParser())->insert_data($str);
+            
+            XmlParser::G()->parse();
+        }catch(\Throwable $ex){
+            //var_dump($ex);
+        }
+        try{
+            $str='<%asp';;
+            XmlParser::G(new XmlParser())->insert_data($str);
+            
+            XmlParser::G()->parse();
+        }catch(\Throwable $ex){
+            //var_dump($ex);
+        }
+        
+        $str='<![CDATA[';;
+        XmlParser::G(new XmlParser())->insert_data($str);
+        XmlParser::G()->parse();
+        
+        //XmlParser::G()->insert_data("abc",3);
+        
+        ////
+        
 do{
         //XmlParser::G()->__construct($handle);
 break;
@@ -36,6 +65,18 @@ break;
         
         \MyCodeCoverage::G()->end(XmlParser::class);
         $this->assertTrue(true);
+    }
+    protected function do_testattrs()
+    {
+        $match_type=0;
+        $str='b="c" class="<?=$x ?>">';
+        $a=XmlParser::ToAttrs($str,$match_byte);
+        
+        $str=' d=e>';
+        $a=XmlParser::ToAttrs($str,$match_byte);
+        
+        $str='<?=$x ?>>';
+        $a=XmlParser::ToAttrs($str,$match_byte);
     }
 }
 class MyXmlParser extends XmlParser

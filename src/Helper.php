@@ -14,27 +14,6 @@ class Helper
     const PHP_BEGIN = "<\x3fphp";
     const PHP_BEGIN_SHOW = "<\x3fphp echo";
     const PHP_ENDBLOCK = "<\x3fphp }\x3f>";
-    
-    /** //DECRAPED Get php code from attribute .if no < ? ? >; wrap decode html ,else use the data inside wrap
-     *
-     * @param string $str
-     * @return string
-     */
-    public static function GetPhp($str)
-    {
-        if (substr($str, 0, 1) != '<') {
-            $str = str_replace('&nbsp;', ' ', $str);
-            //because: the '&nbsp;' entity is not ASCII code 32 but ASCII code 160 (0xa0) in the default ISO 8859-1
-            $str = html_entity_decode($str);
-            return $str;
-        }
-        if (substr($str, 0, 5) == "<\x3fphp") {
-            return substr($str, 5, -2);
-        }
-        if (substr($str, 0, 2) == "<\x3f" || substr($str, 0, 2) == '<%') {
-            return substr($str, 2, -2);
-        }
-    }
     /**
      *  Get the attibute bool value  incasetive
      *  NULL,'','no','false','off' ,'disabled' will be false ,other is true;
@@ -52,27 +31,6 @@ class Helper
             return false;
         } else {
             return true;
-        }
-    }
-    /** //DECRAPED
-     * wrap php block
-     *
-     * @param string $str $string to wrap
-     * @param string $use_decode to htmldecode the string ?
-     * @param string $is_show  start  with < ?php  or < ? php echo
-     * @return string wrapped string;
-     */
-    public static function WrapPhp($str, $use_decode = false, $is_show = false)
-    {
-        if ($use_decode) {
-            $str = str_replace('&nbsp;', ' ', $str);
-            //because: the '&nbsp;' entity is not ASCII code 32 but ASCII code 160 (0xa0) in the default ISO 8859-1
-            $str = html_entity_decode($str);
-        }
-        if ($is_show) {
-            return "<\x3fphp echo $str;\x3f>";
-        } else {
-            return "<\x3fphp $str;\x3f>";
         }
     }
     /**

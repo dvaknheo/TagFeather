@@ -8,12 +8,28 @@ class SingletonExTest extends \PHPUnit\Framework\TestCase
     {
         \MyCodeCoverage::G()->begin(SingletonEx::class);
         
-        //code here
+        SingletonExObject::G();
+        SingletonExObject::G(new SingletonExObject());
+        define('__SINGLETONEX_REPALACER',SingletonExObject::class.'::CreateObject');
+        SingletonExObject::G();
         
-        \MyCodeCoverage::G()->end(SingletonEx::class);
+        \MyCodeCoverage::G()->end();
         $this->assertTrue(true);
         /*
-        SingletonEx::G()->G($object = null);
+        SingletonEx::G()->G($object=null);
         //*/
     }
+}
+class SingletonExObject
+{
+    use SingletonEx;
+    
+    public static function CreateObject($class, $object)
+    {
+        static $_instance;
+        $_instance=$_instance??[];
+        $_instance[$class]=$object?:($_instance[$class]??($_instance[$class]??new static));
+        return $_instance[$class];
+    }
+
 }

@@ -7,7 +7,7 @@ class Supporter extends \PHPUnit\Framework\TestCase
     {
         
         //$this->_testCreateTests();
-        $this->createReport(); //用于创建覆盖报告 ，执行这个文件的目的
+        $this->createReport();
         
         $this->assertTrue(true);
     }

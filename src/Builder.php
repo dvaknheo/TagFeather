@@ -36,19 +36,11 @@ class Builder //extends Hookmanager implements IHandleCallback
     /** Constructor */
     public function __construct()
     {
-        //parent::__construct();
-        //$this->handle=new TF_Handle($this);
-        $this->parser = new TF_XmlParser($this);
-    }
-    /** Destructor */
-    public function __destruct()
-    {
-        $this->parser->__destruct();
     }
     /** Build $this->data */
     public function build()
     {
-        error_reporting(error_reporting() & (~E_NOTICE));
+        $this->parser = new XmlParser($this);
         $this->data = $this->callHooksByType('prebuild', $this->data, true);
         
         $this->parser->data = $this->data;
@@ -95,7 +87,7 @@ class Builder //extends Hookmanager implements IHandleCallback
             return;
         }
         $error_msg =
-            "TF_Builder Parser Error: <br />\n".
+            "Builder Parser Error: <br />\n".
             "Line: {$e['line']} <br />\n".
             "Type:{$e['type']}<br />\n".
             "Message:'".htmlspecialchars($e['info'])."\n".

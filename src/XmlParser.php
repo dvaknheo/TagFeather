@@ -7,6 +7,7 @@ namespace TagFeather;
 
 class XmlParser
 {
+    use SingletonEx;
     /** use for < ? PI=//Processing Instruction ? >  */
     const ATTR_FRAG_PI = 1;
     /** use for < % Active Server Page % > */
@@ -91,8 +92,9 @@ class XmlParser
     public function call($handle, $arg)
     {
         if (!$handle) {
-            return;
+            return $arg;
         }
+        return $arg;
         $ret = call_user_func($this->handle->$handle, $arg);
         $newtime = microtime(true);
         if ($newtime - $this->timeinit > $this->timeout) {
@@ -127,18 +129,17 @@ class XmlParser
         if (method_exists($this->handle, 'error_handle')) {
             $this->handle->error_handle(array('line' => $line,'type' => $type,'info' => $info));
         } else {
-            user_error(__CLASS__ . " Error at line $line ($type):'".htmlspecialchars($info)."'\n", E_USER_ERROR);
-            //throw new Exception(__CLASS__ . " Error at line $line ($msg):'".htmlspecialchars($error_string)."'\n");
+            //user_error(__CLASS__ . " Error at line $line ($type):'".htmlspecialchars($info)."'\n", E_USER_ERROR);
+            throw new \Exception(__CLASS__ . " Error at line $line ($type):'".htmlspecialchars($info)."'\n");
         }
         $this->data = '';
     }
-    /** Parse the $this->data */
+
     public function parse()
     {
         $p_tagheadbegin = '/^<([0-9a-zA-Z_\x7f-\xff:\-]+)/s';
         
-        
-        while ($this->data) {
+        while (strlen($this->data)) {
             if ("<" != $this->data{0}) {
                 $this->parse_text();
             } elseif (0 == strncmp($this->data, static::NOTATION_BEGIN, static::NOTATION_BEGIN_LENGTH)) {
@@ -240,7 +241,7 @@ class XmlParser
         $pos = strpos($data, $PIend);
         if (false === $pos) {
             $this->error_info("UnclosePI");
-            return;
+            return; // @codeCoverageIgnore
         }
         $pos += strlen($PIend);
         $matchdata = substr($data, 0, $pos);
@@ -256,7 +257,7 @@ class XmlParser
         $pos = strpos($data, $ASPend);
         if (false === $pos) {
             $this->error_info("UnclosedASP");
-            return;
+            return; // @codeCoverageIgnore
         }
         $pos += strlen($ASPend);
         $matchdata = substr($data, 0, $pos);
@@ -293,14 +294,14 @@ class XmlParser
             
             
             $this->tagnames[] = $tagname;
-            if ('/' == $matches[1]) {
+            if ('/' == ($matches[1]??null)) {
                 $this->is_current_tag_notext = true;
             }
             $this->tomatchtag_line = $this->current_line;
             $attrs[$this->tag_tagname_key] = $tagname;
             $this->call('tagbegin_handle', $attrs);
             $this->current_line += substr_count($headdata, "\n");
-            if ('/' == $matches[1]) {
+            if ('/' == ($matches[1]??null)) {
                 $this->call('tagend_handle', $tagname);
                 array_pop($this->tagnames);
                 $this->is_current_tag_notext = false;
@@ -466,22 +467,22 @@ class XmlParser
         $attr_pattern_part2 = '((('.$PIpattern.')|('.$ASPpattern.')|[^\'"]+)*)';
         
         $patterns_array = array();
-        if ($flag | static::ATTR_FRAG_PI) {
+        if ($flag | self::ATTR_FRAG_PI) {
             $patterns_array[] = $PIpattern;
         }
-        if ($flag | static::ATTR_FRAG_ASP) {
+        if ($flag | self::ATTR_FRAG_ASP) {
             $patterns_array[] = $ASPpattern;
         }
-        if ($flag | static::ATTR_FRAG_BOOL) {
+        if ($flag | self::ATTR_FRAG_BOOL) {
             $patterns_array[] = $bool_pattern;
         }
-        if ($flag | static::ATTR_FRAG_COMMENT) {
+        if ($flag | self::ATTR_FRAG_COMMENT) {
             $patterns_array[] = $comment_pattern;
         }
-        if ($flag | static::ATTR_FRAG_BRACE) {
+        if ($flag | self::ATTR_FRAG_BRACE) {
             $patterns_array[] = $qoute_pattern;
         }
-        if ($flag | static::ATTR_FRAG_VAR) {
+        if ($flag | self::ATTR_FRAG_VAR) {
             $patterns_array[] = $var_pattern;
         }
 
@@ -497,7 +498,7 @@ class XmlParser
             if ($matched) {
                 $head = $match[0];
                 $key = $match[1];
-                $qoute = $match[2];
+                $qoute = $match[2] ?? null;
                 if ($qoute) {
                     $attr_pattern_part2 = '((('.$PIpattern.')|('.$ASPpattern.')|[^'.$qoute.']+)*)';
                 } else {

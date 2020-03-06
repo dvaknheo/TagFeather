@@ -5,6 +5,8 @@
  */
 namespace TagFeather;
 
+use Helper;
+
 class Hooks
 {
     /** if no default dest file , be the  basename $soure and end with.cache.php   */
@@ -88,7 +90,7 @@ class Hooks
         if (!$tf->struct_files) {
             return $data;
         }
-        $sig = "TF:".substr(md5(TF_Helper::UniqString()), 0, 4);
+        $sig = "TF:".substr(md5(Helper::UniqString()), 0, 4);
         $tf->runtime['structendsig'] = $sig;
         $str = '';
         foreach ($tf->struct_files as $filename) {
@@ -120,9 +122,9 @@ class Hooks
             return $data;
         }
         foreach ($tf->runtime['ssidel'] as $id) {
-            $begin = TF_Helper::UniqString($id)."_begin";
-            $end = TF_Helper::UniqString($id)."_end";
-            $data = TF_Helper::SliceReplace($data, '', $begin, $end, true, false);
+            $begin = Helper::UniqString($id)."_begin";
+            $end = Helper::UniqString($id)."_end";
+            $data = Helper::SliceReplace($data, '', $begin, $end, true, false);
         }
         return $data;
     }
@@ -221,7 +223,7 @@ class Hooks
             "Type:{$e['type']}<br />\n".
             "Message:'".htmlspecialchars($e['info'])."'<br />\n";
         
-        $build_error_msg .= "Stack:".TF_Helper::DumpTagStackString($tf);
+        $build_error_msg .= "Stack:".Helper::DumpTagStackString($tf);
         $tf->is_build_error = true;
         $tf->build_error_msg = $build_error_msg;
         $tf->parser->data = ""; // to stop next paser;
@@ -266,14 +268,14 @@ class Hooks
         if (array_key_exists('tf:tagname', $attrs)) {
             $attrs["\ntagname"] = $attrs['tf:tagname'];
         }
-        if (TF_Helper::GetBool($attrs['tf:notag'])) {
+        if (Helper::GetBool($attrs['tf:notag'])) {
             $attrs["\ntagname"] = '';
         }
         
         if (array_key_exists('tf:text', $attrs)) {
             $attrs["\ntext"] = $attrs['tf:text'];
         }
-        if (TF_Helper::GetBool($attrs['tf:notext'])) {
+        if (Helper::GetBool($attrs['tf:notext'])) {
             $attrs["\ntext"] = '';
         }
         $attrs["\ntext"] = $attrs['tf:pretext'].$attrs["\ntext"].$attrs['tf:posttext'];
@@ -312,7 +314,7 @@ class Hooks
         if (!in_array($attrs['tf:showonce'], $tf->runtime['showonce'])) {
             $tf->runtime['showonce'][] = $attrs['tf:showonce'];
         } else {
-            if (TF_Helper::GetBool($attrs['tf:showonce_trim'])) {
+            if (Helper::GetBool($attrs['tf:showonce_trim'])) {
                 $parent = &$tf->tagStack[sizeof($tf->tagStack) - 1];
                 TF_Builder::SetTagText($parent, rtrim(TF_Builder::GetTagText($parent)));
             }
@@ -324,7 +326,7 @@ class Hooks
     }
     public static function tagend_phpheredoc($attrs, $tf, $hooktype)
     {
-        if (!TF_Helper::GetBool($attrs['tf:phpheredoc'])) {
+        if (!Helper::GetBool($attrs['tf:phpheredoc'])) {
             return $attrs;
         }
         $eot = $attrs['tf:phpheredoc_str']?$attrs['tf:phpheredoc_str']:"eot";
@@ -338,7 +340,7 @@ class Hooks
             return $attrs;
         }
         if ($tf->runtime['meta_writed']) {
-            return TF_Helper::ToBlankAttrs($attrs);
+            return Helper::ToBlankAttrs($attrs);
         }
         $tf->runtime['meta_writed'] = true;
         return $attrs;
@@ -360,11 +362,11 @@ class Hooks
         }
         foreach ($keys as $key) {
             if ($use_class && $key == 'class') {
-                $classes = TF_Helper::SplitClass($attrs['class']);
+                $classes = Helper::SplitClass($attrs['class']);
                 if (!$classes) {
                     continue;
                 }
-                //TF_Helper::SplitClass($attrs['tf:delattrs_class']);
+                //Helper::SplitClass($attrs['tf:delattrs_class']);
                 $classes_del = explode(' ', $attrs['tf:delattrs_class']);
                 $newclasses = array_diff($classes, $classes_del);
                 if ($newclasses) {
@@ -400,7 +402,7 @@ class Hooks
         if (!array_key_exists('tf:over', $attrs)) {
             return $attrs;
         }
-        $flag = TF_Helper::GetBool($attrs['tf:over']);
+        $flag = Helper::GetBool($attrs['tf:over']);
         $keys = array_keys($attrs);
         foreach ($keys as $key) {
             if (0 == strncmp($key, "tf:over:", strlen("tf:over:"))) {
@@ -415,7 +417,7 @@ class Hooks
     }
     public static function tagend_showstruct($attrs, $tf, $hooktype)
     {
-        if (!TF_Helper::GetBool($attrs['tf:showstruct'])) {
+        if (!Helper::GetBool($attrs['tf:showstruct'])) {
             return $attrs;
         }
         $l = sizeof($tf->tagStack);
@@ -453,7 +455,7 @@ class Hooks
         }
         
         $id = $attrs['tf:bindas'];
-        $cmd = TF_Helper::UniqString($id);
+        $cmd = Helper::UniqString($id);
         if (!array_key_exists($cmd, $tf->runtime['bind'])) {
             $tf->runtime['bind'][$cmd] = '';
         }
@@ -482,14 +484,14 @@ class Hooks
     {
         //$tf->runtime['bind']=isset($tf->runtime['bind'])?$tf->runtime['bind']:array();
         
-        if (!array_key_exists('tf:bindwith', $attrs) && !TF_Helper::GetBool($attrs['tf:bindwith'])) {
+        if (!array_key_exists('tf:bindwith', $attrs) && !Helper::GetBool($attrs['tf:bindwith'])) {
             return $attrs;
         }
         $id = '';
         $cmd = '';
         if (array_key_exists('tf:bindwith_text', $attrs)) {
             $id = $attrs['tf:bindwith_text'];
-            $cmd = TF_Helper::UniqString($id);
+            $cmd = Helper::UniqString($id);
             if (!array_key_exists($cmd, $tf->runtime['bind'])) {
                 $tf->runtime['bind'][$cmd] = '';
             }
@@ -497,7 +499,7 @@ class Hooks
         }
         if (array_key_exists('tf:bindwith_pretag', $attrs)) {
             $id = $attrs['tf:bindwith_pretag'];
-            $cmd = TF_Helper::UniqString($id);
+            $cmd = Helper::UniqString($id);
             if (!array_key_exists($cmd, $tf->runtime['bind'])) {
                 $tf->runtime['bind'][$cmd] = '';
             }
@@ -505,7 +507,7 @@ class Hooks
         }
         if (array_key_exists('tf:bindwith_pretext', $attrs)) {
             $id = $attrs['tf:bindwith_pretext'];
-            $cmd = TF_Helper::UniqString($id);
+            $cmd = Helper::UniqString($id);
             if (!array_key_exists($cmd, $tf->runtime['bind'])) {
                 $tf->runtime['bind'][$cmd] = '';
             }
@@ -513,7 +515,7 @@ class Hooks
         }
         if (array_key_exists('tf:bindwith_posttext', $attrs)) {
             $id = $attrs['tf:bindwith_posttext'];
-            $cmd = TF_Helper::UniqString($id);
+            $cmd = Helper::UniqString($id);
             if (!array_key_exists($cmd, $tf->runtime['bind'])) {
                 $tf->runtime['bind'][$cmd] = '';
             }
@@ -521,7 +523,7 @@ class Hooks
         }
         if (array_key_exists('tf:bindwith_posttag', $attrs)) {
             $id = $attrs['tf:bindwith_posttag'];
-            $cmd = TF_Helper::UniqString($id);
+            $cmd = Helper::UniqString($id);
             if (!array_key_exists($cmd, $tf->runtime['bind'])) {
                 $tf->runtime['bind'][$cmd] = '';
             }
@@ -543,7 +545,7 @@ class Hooks
         $text = TF_Builder::TagToText($newattrs, "\nfrag", $keeptext);
         
         $id = $attrs['tf:bindto'];
-        $cmd = TF_Helper::UniqString($id);
+        $cmd = Helper::UniqString($id);
         $text = str_replace($cmd, "", $text);
         
         if (array_key_exists('tf:bindto_mode', $attrs)) {
@@ -556,7 +558,7 @@ class Hooks
             }
         }
         $tf->runtime['bind'][$cmd] = $text;
-        $attrs = TF_Helper::ToHiddenAttrs($attrs);
+        $attrs = Helper::ToHiddenAttrs($attrs);
         return $attrs;
     }
     public static function tagend_rewriteall($attrs, $tf, $hooktype)
@@ -573,7 +575,7 @@ class Hooks
                 $tf->runtime['rewriteall'][$tagname] = array();
             }
             $tf->runtime['rewriteall'][$tagname][] = array($attrs['tf:rewriteall'],$attrs['tf:rewriteall_match'],$attrs['tf:rewriteall_replace']);
-            $attrs = TF_Helper::ToHiddenAttrs($attrs);
+            $attrs = Helper::ToHiddenAttrs($attrs);
         } else {
             foreach ($tf->runtime['rewriteall'] as $tagname => $rewrite_array) {
                 if ("*" != $tagname && $tagname != $attrs["\ntagname"]) {
@@ -773,17 +775,17 @@ class Hooks
             return $attrs;
         }
 
-        if (TF_Helper::GetBool($attrs['tf:delhead'])) {
+        if (Helper::GetBool($attrs['tf:delhead'])) {
             $id = uniqid();
             $tf->runtime['ssidel'][] = $id;
-            $tf->tagStack[0]['tf:pretext'] = TF_Helper::UniqString($id)."_begin".$tf->tagStack[0]['tf:pretext'];
-            $attrs['tf:pretag'] = TF_Helper::UniqString($id)."_end".$attrs['tf:pretag'];
+            $tf->tagStack[0]['tf:pretext'] = Helper::UniqString($id)."_begin".$tf->tagStack[0]['tf:pretext'];
+            $attrs['tf:pretag'] = Helper::UniqString($id)."_end".$attrs['tf:pretag'];
         }
-        if (TF_Helper::GetBool($attrs['tf:delfoot'])) {
+        if (Helper::GetBool($attrs['tf:delfoot'])) {
             $id = uniqid();
             $tf->runtime['ssidel'][] = $id;
-            $tf->tagStack[0]['tf:posttext'] = TF_Helper::UniqString($id)."_end".$tf->tagStack[0]['tf:posttext'];
-            $attrs['tf:posttag'] = $attrs['tf:posttag'].TF_Helper::UniqString($id)."_begin";
+            $tf->tagStack[0]['tf:posttext'] = Helper::UniqString($id)."_end".$tf->tagStack[0]['tf:posttext'];
+            $attrs['tf:posttag'] = $attrs['tf:posttag'].Helper::UniqString($id)."_begin";
         }
         return $attrs;
     }
@@ -799,19 +801,19 @@ class Hooks
             $id = uniqid();
             $tf->runtime['ssidel'][] = $id;
             
-            $tf->tagStack[0]['tf:pretext'] = TF_Helper::UniqString($id)."_begin".$tf->tagStack[0]['tf:pretext'];
+            $tf->tagStack[0]['tf:pretext'] = Helper::UniqString($id)."_begin".$tf->tagStack[0]['tf:pretext'];
             if ($tf->in_struct) {
                 $sig = $tf->runtime['structendsig'];
                 $sig = "</$sig>";
                 $pos = strpos($tf->parser->data, $sig);
                 
                 if (false !== $pos) {
-                    $tf->parser->data = substr_replace($tf->parser->data, $data.TF_Helper::UniqString($id)."_end", $pos + strlen($sig), 0);
+                    $tf->parser->data = substr_replace($tf->parser->data, $data.Helper::UniqString($id)."_end", $pos + strlen($sig), 0);
                 } else {
-                    $tf->parser->data = TF_Helper::UniqString($id)."_end".$data.$tf->parser->data;
+                    $tf->parser->data = Helper::UniqString($id)."_end".$data.$tf->parser->data;
                 }
             } else {
-                $tf->parser->data = TF_Helper::UniqString($id)."_end".$data.$tf->parser->data;
+                $tf->parser->data = Helper::UniqString($id)."_end".$data.$tf->parser->data;
             }
         }
         if ($attrs['tf:foot']) {
@@ -820,9 +822,9 @@ class Hooks
             $data = ($filename)?file_get_contents($filename):'';
             $id = uniqid();
             $tf->runtime['ssidel'][] = $id;
-            $tf->tagStack[0]['tf:posttext'] = TF_Helper::UniqString($id)."_end".$tf->tagStack[0]['tf:posttext'];
+            $tf->tagStack[0]['tf:posttext'] = Helper::UniqString($id)."_end".$tf->tagStack[0]['tf:posttext'];
             
-            $tf->parser->data = $tf->parser->data.TF_Helper::UniqString($id)."_begin".$data;
+            $tf->parser->data = $tf->parser->data.Helper::UniqString($id)."_begin".$data;
         }
         return $attrs;
     }
@@ -832,7 +834,7 @@ class Hooks
         if (!array_key_exists('tf:phplang', $attrs)) {
             return $attrs;
         }
-        $_php_lang = TF_Helper::GetPhp($attrs['tf:phplang']);
+        $_php_lang = Helper::GetPhp($attrs['tf:phplang']);
         $_php_lang = trim($_php_lang);
         if (substr($_php_lang, 0, 1) == '=') {
             $_php_lang = substr($_php_lang, 1);
@@ -868,11 +870,11 @@ class Hooks
         //$tf->runtime['lang']=isset($tf->runtime['lang'])?$tf->runtime['lang']:array();
         $tf->runtime['phplang'] = array_merge($tf->runtime['phplang'], $lang);
         
-        return TF_Helper::ToHiddenAttrs($attrs);
+        return Helper::ToHiddenAttrs($attrs);
     }
     public static function tagend_textmap($attrs, $tf, $hooktype)
     {
-        if (!array_key_exists('tf:textmap', $attrs) && !TF_Helper::GetBool($attrs['tf:textmap'])) {
+        if (!array_key_exists('tf:textmap', $attrs) && !Helper::GetBool($attrs['tf:textmap'])) {
             return $attrs;
         }
         $text = TF_Builder::GetTagText($attrs);
@@ -881,10 +883,10 @@ class Hooks
             $value = trim($text);
             $array = array($key => $value);
         }
-        $array = TF_Helper::GetTextMap($text);
+        $array = Helper::GetTextMap($text);
         $tf->runtime['textmap'] = array_merge($tf->runtime['textmap'], $array);
         
-        return TF_Helper::ToBlankAttrs($attrs);
+        return Helper::ToBlankAttrs($attrs);
     }
     public static function tagend_attrmap($attrs, $tf, $hooktype)
     {
@@ -899,13 +901,13 @@ class Hooks
                 $value = trim($text);
                 $array = array($key => $value);
             }
-            $array = TF_Helper::GetTextMap($text);
+            $array = Helper::GetTextMap($text);
             $keytomap = $attrs['tf:attrmap'];
             if (!is_array($tf->runtime['attrmap'][$attrtomap])) {
                 $tf->runtime['attrmap'][$keytomap] = array();
             }
             $tf->runtime['attrmap'][$keytomap] = array_merge($tf->runtime['attrmap'][$keytomap], $array);
-            return TF_Helper::ToBlankAttrs($attrs);
+            return Helper::ToBlankAttrs($attrs);
         } else {
             foreach ($tf->runtime['attrmap'] as $keytomap => $array) {
                 if (!array_key_exists($keytomap, $attrs)) {
@@ -923,7 +925,7 @@ class Hooks
     
     public static function tagend_bindmap($attrs, $tf, $hooktype)
     {
-        if (!array_key_exists('tf:bindmap', $attrs) && !TF_Helper::GetBool($attrs['tf:bindmap'])) {
+        if (!array_key_exists('tf:bindmap', $attrs) && !Helper::GetBool($attrs['tf:bindmap'])) {
             return $attrs;
         }
         $text = TF_Builder::GetTagText($attrs);
@@ -932,13 +934,13 @@ class Hooks
             $value = trim($text);
             $array = array($key => $value);
         }
-        $array = TF_Helper::GetTextMap($text);
+        $array = Helper::GetTextMap($text);
         foreach ($array as $key => $value) {
-            $array[$key] = TF_Helper::UniqString($value);
+            $array[$key] = Helper::UniqString($value);
         }
         $tf->runtime['textmap'] = array_merge($tf->runtime['textmap'], $array);
         
-        return TF_Helper::ToBlankAttrs($attrs);
+        return Helper::ToBlankAttrs($attrs);
     }
     ///////////////////////////////////////////////////////////////////////////
 
@@ -952,9 +954,9 @@ class Hooks
     }
     public static function tagbegin_safe($attrs, $tf, $hooktype)
     {
-        if (array_key_exists('tf:safe', $attrs) && TF_Helper::GetBool($attrs['tf:safe'])) {
+        if (array_key_exists('tf:safe', $attrs) && Helper::GetBool($attrs['tf:safe'])) {
             $tf->safetemplate_mode = true;
-            if (TF_Helper::GetBool($attrs['tf:safe_safeedit'])) {
+            if (Helper::GetBool($attrs['tf:safe_safeedit'])) {
                 $tf->safeedit_mode = true;
             }
             $data = $tf->parser->data;
@@ -993,7 +995,7 @@ class Hooks
             if ($tf->safeedit_mode) {
                 $deny_tagname = explode(" ", "iframe script frame");
                 if (in_array($deny_tagname, strtolower($attrs["\ntagname"]))) {
-                    return TF_Helper::ToBlankAttrs($attrs);
+                    return Helper::ToBlankAttrs($attrs);
                 }
             }
             $keys = array_keys($attrs);
@@ -1022,7 +1024,7 @@ class Hooks
                 $tf->in_struct = sizeof($tf->tagStack);
             }
         }
-        if (TF_Helper::GetBool($attrs['tf:struct_loaded'])) {
+        if (Helper::GetBool($attrs['tf:struct_loaded'])) {
             return $attrs;
         }
         $attrs['tf:struct_loaded'] = "yes";
@@ -1047,11 +1049,11 @@ class Hooks
     }
     public static function tagbegin_showstruct($attrs, $tf, $hooktype)
     {
-        if (!TF_Helper::GetBool($attrs['tf:showstruct'])) {
+        if (!Helper::GetBool($attrs['tf:showstruct'])) {
             return $attrs;
         }
         $attrs['tf:pure'] = "yes";
-        if (TF_Helper::GetBool($attrs['tf:showstruct_noserver'])) {
+        if (Helper::GetBool($attrs['tf:showstruct_noserver'])) {
             $attrs['tf:pure_noserver'] = "yes";
         }
         return $attrs;
@@ -1060,29 +1062,29 @@ class Hooks
     public static function tagbegin_tochildren($attrs, $tf, $hooktype)
     {
         $parent = end($tf->tagStack);
-        if (array_key_exists('tf:tochildren', $parent) && is_array($parent['tf:tochildren']) && !TF_Helper::GetBool($attrs['tf:tochildren_ignore'])) {
-            $attrs = TF_Helper::MergeAttrs($attrs, $parent['tf:tochildren']);
+        if (array_key_exists('tf:tochildren', $parent) && is_array($parent['tf:tochildren']) && !Helper::GetBool($attrs['tf:tochildren_ignore'])) {
+            $attrs = Helper::MergeAttrs($attrs, $parent['tf:tochildren']);
         }
         if (array_key_exists('tf:tochildren', $attrs)) {
-            if (!TF_Helper::GetBool($attrs['tf:tochildren'])) {
+            if (!Helper::GetBool($attrs['tf:tochildren'])) {
                 unset($attrs['tf:tochildren']);
                 return $attrs;
             }
-            $obj_assign = TF_Helper::AttrsPrepareAssign(
+            $obj_assign = Helper::AttrsPrepareAssign(
                 $attrs,
                 'tf:tochildren',
                 'tf:tochildren_showtag',
                 'tf:tochildren_showtext',
                 'tf:tochildren_onlyserver'
             );
-            $onlyserver = TF_Helper::GetBool($attrs['tf:tochildren_onlyserver']);
+            $onlyserver = Helper::GetBool($attrs['tf:tochildren_onlyserver']);
             if ($onlyserver) {
-                $obj_assign = TF_Helper::ToServerOrNormalAttrs($obj_assign, true);
+                $obj_assign = Helper::ToServerOrNormalAttrs($obj_assign, true);
             }
-            $show_tag = TF_Helper::GetBool($attrs['tf:tochildren_showtag']);
-            $show_text = TF_Helper::GetBool($attrs['tf:tochildren_showtext']);
+            $show_tag = Helper::GetBool($attrs['tf:tochildren_showtag']);
+            $show_text = Helper::GetBool($attrs['tf:tochildren_showtext']);
             
-            $attrs = TF_Helper::ToBlankAttrs($attrs);
+            $attrs = Helper::ToBlankAttrs($attrs);
             $attrs['tf:tochildren'] = $obj_assign;
             if ($show_tag) {
                 unset($attrs['tf:notag']);
@@ -1142,20 +1144,20 @@ class Hooks
         if (!array_key_exists('tf:selector', $attrs)) {
             $matches = $tf->selector->objectsFromAttrs($tf->tagStack, $attrs);
             foreach ($matches as $match) {
-                $attrs = TF_Helper::MergeAttrs($attrs, $match);
+                $attrs = Helper::MergeAttrs($attrs, $match);
             }
             return $attrs;
         }
         $assign_name = $name = $attrs['tf:selector'];
-        $obj_assign = TF_Helper::AttrsPrepareAssign($attrs, 'tf:selector');
+        $obj_assign = Helper::AttrsPrepareAssign($attrs, 'tf:selector');
         
         $tf->selector->addSelectorHash($assign_name, $obj_assign);
-        return TF_Helper::ToBlankAttrs($attrs);
+        return Helper::ToBlankAttrs($attrs);
     }
     /** tf:quick */
     public static function tagbegin_quick($attrs, $tf, $hooktype)
     {
-        $flag = TF_Helper::GetBool($attrs['tf:quick']);
+        $flag = Helper::GetBool($attrs['tf:quick']);
         if (!$flag) {
             return $attrs;
         }
@@ -1166,7 +1168,7 @@ class Hooks
         } elseif ($attrs['name']) {
             $assign_name = "@".$attrs['name'];
         } elseif ($attrs['class']) {
-            $csses = TF_Helper::SplitClass($attrs['class']);
+            $csses = Helper::SplitClass($attrs['class']);
             foreach ($csses as $css) {
                 if ('<' == substr($css, 0, 1)) {
                     continue;
@@ -1177,11 +1179,11 @@ class Hooks
         if ($attrs['tf:quick_child']) {
             $assign_name .= "^".$attrs['tf:quick_child'];
         }
-        $obj_assign = TF_Helper::AttrsPrepareAssign($attrs, 'tf:quick', 'tf:quick_child');
+        $obj_assign = Helper::AttrsPrepareAssign($attrs, 'tf:quick', 'tf:quick_child');
         
         $tf->selector->addSelectorHash($assign_name, $obj_assign);
         
-        return TF_Helper::ToBlankAttrs($attrs);
+        return Helper::ToBlankAttrs($attrs);
     }
     /** assign by visible */
     public static function tagbegin_bycookie($attrs, $tf, $hooktype)
@@ -1201,7 +1203,7 @@ class Hooks
             return $attrs;
         }
         
-        $obj_assign = TF_Helper::AttrsPrepareAssign($attrs, 'tf:bycookie');
+        $obj_assign = Helper::AttrsPrepareAssign($attrs, 'tf:bycookie');
         $key = $attrs['tf:bycookie'];//trim(TF_Builder::GetTagText($attrs));
         $tf->runtime['bycookie'][$key] = $obj_assign;
         return $attrs;
@@ -1220,9 +1222,9 @@ class Hooks
         }
         
         if (array_key_exists('tf:byvisible', $attrs)) {
-            $obj_assign = TF_Helper::AttrsPrepareAssign($attrs, 'tf:byvisible', 'tf:byvisible_reverse', 'tf:byvisible_keeptext');
-            $is_keeptext = TF_Helper::GetBool($attrs['tf:byvisible_keeptext']);
-            if (!TF_Helper::GetBool($attrs['tf:byvisible_reverse'])) {
+            $obj_assign = Helper::AttrsPrepareAssign($attrs, 'tf:byvisible', 'tf:byvisible_reverse', 'tf:byvisible_keeptext');
+            $is_keeptext = Helper::GetBool($attrs['tf:byvisible_keeptext']);
+            if (!Helper::GetBool($attrs['tf:byvisible_reverse'])) {
                 if (array_key_exists('value', $attrs)) {
                     $key = $attrs['value'];
                     if (!$is_keeptext) {
@@ -1256,7 +1258,7 @@ class Hooks
             }
             
             $tf->runtime['byvisible'][$key] = $obj_assign;
-            return TF_Helper::ToBlankAttrs($attrs);
+            return Helper::ToBlankAttrs($attrs);
         } else {
             if ('input' == $attrs["\ntagname"]) {
                 $text = $attrs['value'];
@@ -1264,7 +1266,7 @@ class Hooks
                 $text = trim(TF_Builder::GetTagText($attrs));//$text=trim($attrs['parser text']);
             }
             if (array_key_exists($text, $tf->runtime['byvisible'])) {
-                $attrs = TF_Helper::MergeAttrs($attrs, $tf->runtime['byvisible'][$text]);
+                $attrs = Helper::MergeAttrs($attrs, $tf->runtime['byvisible'][$text]);
             }
         }
         
@@ -1289,10 +1291,10 @@ class Hooks
             if ($level == 0) {
                 $level = -1;
             }
-            $obj_assign = TF_Helper::AttrsPrepareAssign($attrs, 'tf:toparent', 'tf:toparent_level', 'tf:toparent_onlyserver');
-            $onlyserver = TF_Helper::GetBool($attrs['tf:toparent_onlyserver']);
+            $obj_assign = Helper::AttrsPrepareAssign($attrs, 'tf:toparent', 'tf:toparent_level', 'tf:toparent_onlyserver');
+            $onlyserver = Helper::GetBool($attrs['tf:toparent_onlyserver']);
             if ($onlyserver) {
-                $obj_assign = TF_Helper::ToServerOrNormalAttrs($obj_assign, true);
+                $obj_assign = Helper::ToServerOrNormalAttrs($obj_assign, true);
             }
             TF_Builder::ClearTagText($obj_assgin);//unset($obj_assign['parser text']);
             $obj = &$tf->tagStack[sizeof($tf->tagStack) + $level];
@@ -1309,7 +1311,7 @@ class Hooks
                 $ids[] = $id;
                 $obj['tf:toparent_id'] = implode(" ", $ids);
             }
-            return TF_Helper::ToBlankAttrs($attrs);
+            return Helper::ToBlankAttrs($attrs);
         }
         return $attrs;
     }	/** assign to same href attribute  */
@@ -1329,27 +1331,27 @@ class Hooks
             return $attrs;
         }
         //$tf->runtime['byhref']=isset($tf->runtime['byhref'])?$tf->runtime['byhref']:array();
-        if (array_key_exists('tf:byhref', $attrs) && TF_Helper::GetBool($attrs['tf:byhref'])) {
-            $obj_assign = TF_Helper::AttrsPrepareAssign($attrs, 'tf:byhref', 'tf:byhref_echo', 'tf:byhref_reverse');
+        if (array_key_exists('tf:byhref', $attrs) && Helper::GetBool($attrs['tf:byhref'])) {
+            $obj_assign = Helper::AttrsPrepareAssign($attrs, 'tf:byhref', 'tf:byhref_echo', 'tf:byhref_reverse');
             TF_Builder::ClearTagText($obj_assign);//unset($obj_assign['parser text']);
             $text = trim(TF_Builder::GetTagText($attrs));//$text=trim($attrs['parser text']);
-            if (!TF_Helper::GetBool($attrs['tf:byhref_reverse'])) {
+            if (!Helper::GetBool($attrs['tf:byhref_reverse'])) {
                 $key = $text;
             } else {
                 $key = $obj_assign['href'];
                 $obj_assign['href'] = $text;
             }
             $tf->runtime['byhref'][$key] = $obj_assign;
-            return TF_Helper::ToBlankAttrs($attrs);
+            return Helper::ToBlankAttrs($attrs);
         } else {
             //do :assign
             $mappedhref = $tf->runtime['byhref'][$attrs['href']];
             
             if ($mappedhref) {
-                if (TF_Helper::GetBool($attrs['tf:byhref_echo'])) {
+                if (Helper::GetBool($attrs['tf:byhref_echo'])) {
                     $mappedhref = "<\x3fphp echo \"$mappedhref\"\x3f>";
                 }
-                $attrs = TF_Helper::MergeAttrs($attrs, $mappedhref);
+                $attrs = Helper::MergeAttrs($attrs, $mappedhref);
             }
         }
         return $attrs;
@@ -1359,7 +1361,7 @@ class Hooks
         if (!array_key_exists('tf:inserttoparse', $attrs)) {
             return $attrs;
         }
-        TF_Helper::InsertDataAndFile($tf, $attrs['tf:inserttoparse'], $attrs['tf:inserttoparse_file']);
+        Helper::InsertDataAndFile($tf, $attrs['tf:inserttoparse'], $attrs['tf:inserttoparse_file']);
         return $attrs;
     }
     public static function tagend_appendtoparse($attrs, $tf, $hooktype)
@@ -1367,7 +1369,7 @@ class Hooks
         if (!array_key_exists('tf:appendtoparse', $attrs)) {
             return $attrs;
         }
-        TF_Helper::InsertDataAndFile($tf, $attrs['tf:appendtoparse'], $attrs['tf:appendtoparse_file']);
+        Helper::InsertDataAndFile($tf, $attrs['tf:appendtoparse'], $attrs['tf:appendtoparse_file']);
         return $attrs;
     }
     public static function tagbegin_pure($attrs, $tf, $hooktype)
@@ -1383,7 +1385,7 @@ class Hooks
                 }
                 $showserver = $tf->runtime['in_pure_showserver'];
                 if (!$showserver) {
-                    $attrs = TF_Helper::ToServerOrNormalAttrs($attrs, false);
+                    $attrs = Helper::ToServerOrNormalAttrs($attrs, false);
                 }
                 $keeptext = (!in_array($attrs["\ntagname"], $tf->parser->single_tag))?true:false;
                 $text = TF_Builder::TagToText($attrs, "\nfrag", $keeptext);
@@ -1407,7 +1409,7 @@ class Hooks
         }
         if ($hooktype == "tagbegin") {
             if (array_key_exists('tf:pure', $attrs)) {
-                $tf->runtime['in_pure_showserver'] = !TF_Helper::GetBool($attrs['tf:pure_noserver']);
+                $tf->runtime['in_pure_showserver'] = !Helper::GetBool($attrs['tf:pure_noserver']);
                 $level = 0 + $tf->runtime['in_pure'];
                 $current_level = sizeof($tf->tagStack);
                 if ($level == 0 || $current_level < $level) {
@@ -1497,7 +1499,7 @@ class Hooks
         if ('appendtoparse' != $attrs['#']) {
             return $attrs;
         }
-        TF_Helper::InsertDataAndFile($tf, $attrs['data'], $attrs['file']);
+        Helper::InsertDataAndFile($tf, $attrs['data'], $attrs['file']);
         return array();
     }
     /** ssi:appendtotextbegin ssi:appendtotextend */
@@ -1537,7 +1539,7 @@ class Hooks
             $tf->runtime['ssidel_lastid'] = $id;
         };
         $tf->runtime['ssidel'][] = $id;
-        $str = TF_Helper::UniqString($id)."_begin";
+        $str = Helper::UniqString($id)."_begin";
         $tf->parser->insert_data($str);
         return array();
     }
@@ -1551,7 +1553,7 @@ class Hooks
         if (!$id) {
             $id = $tf->runtime['ssidel_lastid'];
         };
-        $str = TF_Helper::UniqString($id)."_end";
+        $str = Helper::UniqString($id)."_end";
         $tf->parser->insert_data($str);
         return array();
     }
@@ -1625,7 +1627,7 @@ class Hooks
                     unset($obj_assign['tf:bycookie_replace']);
                 }
                 $parent = &$tf->tagStack[sizeof($tf->tagStack) - 1];
-                $parent = TF_Helper::MergeAttrs($parent, $obj_assign);
+                $parent = Helper::MergeAttrs($parent, $obj_assign);
                 if ($flag) {
                     $flag = false;
                     $text = substr_replace($text, $str, strlen($key));
@@ -1666,13 +1668,13 @@ class Hooks
             if (!is_array($attrs)) {
                 return $attrs;
             }//var_dump($attrs);die(__FUNCTION__."::".__LINE__);}
-            $attrs = TF_Helper::call_tagblock_hook("tagname_".$attrs["\ntagname"], $attrs, $tf, $hooktype);
-            $attrs = TF_Helper::call_tagblock_hook("id_".$attrs['id'], $attrs, $tf, $hooktype);
-            $attrs = TF_Helper::call_tagblock_hook("name_".$attrs['name'], $attrs, $tf, $hooktype);
+            $attrs = Helper::call_tagblock_hook("tagname_".$attrs["\ntagname"], $attrs, $tf, $hooktype);
+            $attrs = Helper::call_tagblock_hook("id_".$attrs['id'], $attrs, $tf, $hooktype);
+            $attrs = Helper::call_tagblock_hook("name_".$attrs['name'], $attrs, $tf, $hooktype);
             
-            $csses = TF_Helper::SplitClass($attrs['class']);
+            $csses = Helper::SplitClass($attrs['class']);
             foreach ($csses as $css) {
-                $attrs = TF_Helper::call_tagblock_hook("class_".$css, $attrs, $tf, $hooktype);
+                $attrs = Helper::call_tagblock_hook("class_".$css, $attrs, $tf, $hooktype);
             }
             foreach ($attrs as $key => $value) {
                 $pos = strpos($key, ':');
@@ -1682,7 +1684,7 @@ class Hooks
                 $prekey = substr($key, 0, $pos);
                 if ($prekey == 'php') {
                     $mainkey = substr($key, $pos + 1);
-                    $attrs = TF_Helper::call_tagblock_hook("php_".$mainkey, $attrs, $tf, $hooktype);
+                    $attrs = Helper::call_tagblock_hook("php_".$mainkey, $attrs, $tf, $hooktype);
                 }
             }
             return $attrs;

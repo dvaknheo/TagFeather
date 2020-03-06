@@ -1,7 +1,7 @@
 <?php
-function _dnmvcs_namespace_autoload($class) {
+function _tagfeather_namespace_autoload($class) {
     $path=__DIR__.'/src/';
-    $namespace='DuckPhp\\';
+    $namespace='TagFeather\\';
     if (strncmp($namespace, $class, strlen($namespace)) !== 0) {
         return false;
     }
@@ -12,4 +12,4 @@ function _dnmvcs_namespace_autoload($class) {
     require_once $file;
     return true;
 }
-spl_autoload_register('_dnmvcs_namespace_autoload');
+spl_autoload_register('_tagfeather_namespace_autoload');
