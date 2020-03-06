@@ -77,28 +77,26 @@ class XmlParser
     private $timeinit = 0;
     private $tomatchtag_line = 1;
     
-    protected $is_error=false;
+    protected $is_error = false;
     protected $parsing_attrs;
     /**
      * constructor
      *
      */
-    public function __construct($handle=null)
+    public function __construct($handle = null)
     {
         $this->handle = $handle;
         $this->timeinit = microtime(true);
     }
-
     public function call($handle, $arg)
     {
-        if (!$handle) {
+        if (!$this->handle) {
             return $arg;
         }
-        return $arg;
-        $ret = call_user_func($this->handle->$handle, $arg);
+        $ret = call_user_func([$this->handle,$handle], $arg);
         $newtime = microtime(true);
         if ($newtime - $this->timeinit > $this->timeout) {
-            $this->error_info("Timeout");
+            $this->error_info("Timeout");  // @codeCoverageIgnore
         }
         return $ret;
     }
@@ -142,16 +140,16 @@ class XmlParser
         while (strlen($this->data)) {
             if ('<' !== substr($this->data, 0, 1)) {
                 $this->parse_text();
-            } elseif (0 == strncmp($this->data, static::NOTATION_BEGIN, static::NOTATION_BEGIN_LENGTH)) {
+            } elseif (0 == strncmp($this->data, '<!', 2)) {    //<!
                 $this->parse_notation();
-            } elseif (0 == strncmp($this->data, "</", 2)) {
+            } elseif (0 == strncmp($this->data, '</', 2)) {
                 $this->parse_tagend();
-            } elseif (0 == strncmp($this->data, static::PI_BEGIN, static::PI_BEGIN_LENGTH)) {
+            } elseif (0 == strncmp($this->data, "<\x3f", 2)) {         //<\?
                 $this->parse_pi();
             } elseif (preg_match($p_tagheadbegin, $this->data, $matches)) {
                 $this->parsing_attrs = $matches;
                 $this->parse_tag();
-            } elseif (0 == strncmp($this->data, static::ASP_BEGIN, static::ASP_BEGIN_LENGTH)) {
+            } elseif (0 == strncmp($this->data, "<\x25", 2)) {        //<\%
                 $this->parse_asp();
             } else {
                 $this->data = substr($this->data, 1);
@@ -182,10 +180,8 @@ class XmlParser
         }
         $this->data = substr($this->data, strlen($matches[0]));
         $lasttagname = $matches[1];
-        if (!$this->is_matchtagname($lasttagname)) {
-            //$this->call('text_handle',$matches[0]);
-            return;
-        }
+        
+        $this->check_matchtagname($lasttagname);
         
         $this->call('tagend_handle', $lasttagname);
         array_pop($this->tagnames);
@@ -291,14 +287,14 @@ class XmlParser
             
             
             $this->tagnames[] = $tagname;
-            if ('/' == ($matches[1]??null)) {
+            if ('/' == ($matches[1] ?? null)) {
                 $this->is_current_tag_notext = true;
             }
             $this->tomatchtag_line = $this->current_line;
             $attrs[$this->tag_tagname_key] = $tagname;
             $this->call('tagbegin_handle', $attrs);
             $this->current_line += substr_count($headdata, "\n");
-            if ('/' == ($matches[1]??null)) {
+            if ('/' == ($matches[1] ?? null)) {
                 $this->call('tagend_handle', $tagname);
                 array_pop($this->tagnames);
                 $this->is_current_tag_notext = false;
@@ -311,10 +307,9 @@ class XmlParser
             }
         } else {
             if (strlen($headdata) != 0) {
-                $this->error_info("UnqoutedAttribute");
-                return;
+                return $this->error_info("UnqoutedAttribute");
             }
-            $this->call('text_handle', $headdata);
+            $this->call('text_handle', $headdata); // @codeCoverageIgnore
         }
     }
     protected function parse_script()
@@ -323,8 +318,7 @@ class XmlParser
         
         $pos = stripos($data, '</script>');
         if (false === $pos) {
-            $this->error_info("UncloseSCRIPT");
-            return;
+            return $this->error_info("UncloseSCRIPT");
         }
         
         $text = substr($data, 0, $pos);
@@ -346,11 +340,12 @@ class XmlParser
                     $this->call('pi_handle', $text);
                 } elseif (static::ASP_BEGIN == substr($text, 0, 2) && static::ASP_END == substr($text, -2)) {
                     $this->call('asp_handle', $text);
-                } elseif (false !== strpos($text, static::PI_BEGIN) || false !== strpos($text, static::ASP_BEGIN)) {
-                    $this->error_info("ScriptServerBlockUnclosed");
                 } else {
                     $this->call('text_handle', $text);
                 }
+                //elseif (false !== strpos($text, static::PI_END) || false !== strpos($text, static::ASP_END)) {
+                //    $this->error_info("ScriptServerBlockUnclosed");
+                //}
                 $this->current_line += substr_count($this->data, "\n");
             }
         }
@@ -384,10 +379,10 @@ class XmlParser
         
         $p_attr = "/($PIpattern)|($ASPpattern)/s";
         
-        if (false === strpos($str, static::PI_BEGIN) || false === strpos($str, static::ASP_END)) {
+        if (false === strpos($str, static::PI_BEGIN) && false === strpos($str, static::ASP_BEGIN)) {
             return $str;
         }
-        $str = preg_replace_callback($p_attr, array(&$this,'parse_serverfrag_callback'), $str);
+        $str = preg_replace_callback($p_attr, array(&$this,'_parse_serverfrag_callback'), $str);
         return $str;
     }
     /**
@@ -396,23 +391,22 @@ class XmlParser
      * @param array $match
      * @return string
      */
-    public function parse_serverfrag_callback($match)
+    public function _parse_serverfrag_callback($match)
     {
-        if ($match[1]) {
+        $str = '';
+        if (!empty($match[1])) {
             $str = $this->call('pi_handle', $match[1]);
-        } elseif ($match[3]) {
+        } elseif (!empty($match[3])) {
             $str = $this->call('asp_handle', $match[3]);
-        }else{
-            $str ='';
         }
         return $str;
     }
-    protected function is_matchtagname($lasttagname)
+    protected function check_matchtagname($lasttagname)
     {
         $tagname = end($this->tagnames);
         if ($tagname != $lasttagname) {
             $this->error_info("UnmatchTagName '$tagname' found '/$lasttagname' at line {$this->tomatchtag_line} ");
-            return false;
+            // return false;
         }
         return true;
     }

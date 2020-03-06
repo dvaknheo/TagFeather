@@ -16,10 +16,7 @@ class HookObjectBase
             $this->hookmanager = $hookmanager;
             $this->reg($hookmanger);
         }
-    }
-    public function __destruct()
-    {
-        $this->unreg($this->hookmanager, null, 'unreg');
+        // unreg $this->unreg($this->hookmanager, null, 'unreg');
     }
     public function reg($hookmanager, $tf = null, $hooktype = 'reg')
     {

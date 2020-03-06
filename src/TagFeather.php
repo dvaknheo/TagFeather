@@ -187,8 +187,12 @@ class TagFeather extends Builder
      */
     public function throw_error($type, $info)
     {
-        $e = array('source' => __CLASS__ ,'type' => $type,
-            'line' => $this->parser->current_line,'info' => $info);
+        $e = array(
+            'source' => __CLASS__ ,
+            'type' => $type,
+            'line' => $this->parser->current_line,
+            'info' => $info
+        );
         $this->hookmanager->call_parsehooksbytype('error', $e);
         return;
     }
@@ -198,9 +202,8 @@ class TagFeather extends Builder
         parent::__construct();
         
         $this->builder = $this;
-        $this->parser = $this->builder->parser;
-        $this->hookmanager = new TF_HookManager();
-        $this->selector = new TF_Selector();
+        $this->hookmanager = new HookManager();
+        $this->selector = new Selector();
         
         $ext_parsehooks = array(
             'unreg' => array(),
@@ -217,6 +220,9 @@ class TagFeather extends Builder
             'comment' => array(),
             'notation' => array(),
             'cdata' => array(),
+            ////
+            'modifier' => [],
+            'ssi' => [],
         );
         $this->hookmanager->parsehooks = $ext_parsehooks;
         
@@ -224,19 +230,7 @@ class TagFeather extends Builder
         $this->hookmanager->manager_callback = $this;
         $this->hookmanager->parsehooks['modifier'] = array();
         $this->hookmanager->parsehooks['ssi'] = array();
-        
         $this->initHooks();
-        $this->seed = mt_rand(0, 9999);
-    }
-    /** Destructor */
-    public function __destruct()
-    {
-        parent::__destruct();
-        
-        $this->builder = null;
-        $this->parser = null;
-        $this->handle = null;
-        $this->hookmanager = null;
     }
     /**
      * init hooks;

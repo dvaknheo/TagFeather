@@ -7,7 +7,7 @@ namespace TagFeather;
 
 use TagFeather\SingletonEx;
 
-class Builder //extends Hookmanager implements IHandleCallback
+class Builder implements IXmlParserCallback
 {
     use SingletonEx;
     
@@ -37,14 +37,11 @@ class Builder //extends Hookmanager implements IHandleCallback
     /** @var TF_Handle the handle call by parser */
     public $handle = null;
     public $builder_callback = null;
-    /** Constructor */
-    public function __construct()
-    {
-    }
     /** Build $this->data */
     public function build()
     {
         $this->parser = new XmlParser($this);
+        
         $this->data = $this->callHooksByType('prebuild', $this->data, true);
         
         $this->parser->data = $this->data;
@@ -60,7 +57,7 @@ class Builder //extends Hookmanager implements IHandleCallback
     public function addLastTagText($str)
     {
         if ($str !== '') {
-            $this->key_text="\ntext";
+            $this->key_text = "\ntext";
             $this->tagStack[sizeof($this->tagStack) - 1][$this->key_text] .= $str;
         }
     }
@@ -122,8 +119,8 @@ class Builder //extends Hookmanager implements IHandleCallback
         //if( !array_key_exists("\ntagname",$attrs) ){
         //	$attrs["\ntagname"]=end($this->parser->tagnames);
         //}
-        $keeptext=true;
-        if($this->parser){
+        $keeptext = true;
+        if ($this->parser) {
             $keeptext = (!in_array($attrs["\ntagname"], $this->parser->single_tag))?true:false;
         }
         $text = static::TagToText($attrs, "\nfrag", $keeptext);
@@ -309,7 +306,7 @@ class Builder //extends Hookmanager implements IHandleCallback
                     $headdata[] = "$value";
                     continue;
                 }
-                if (substr($key,0,1) != "\n") {
+                if (substr($key, 0, 1) != "\n") {
                     $headdata[] = "$key=\"$value\"";
                 }
             }

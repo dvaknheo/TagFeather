@@ -37,10 +37,12 @@ class LockHookObject extends HookObjectBase
                 return false;
             }
             $lockfiletime = file_get_contents($this->lockfile);
+            /*
             if (time() > $mtime + $tf->parser->timeout) {
                 $n = file_put_contents($this->lockfile, time());
                 return false;
             }
+            */
             
             $tf->is_build_error = true;
             $tf->build_error_msg = "FileLocked";

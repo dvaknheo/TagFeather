@@ -45,44 +45,61 @@ class XmlParserTest extends \PHPUnit\Framework\TestCase
         }catch(\Throwable $ex){
             var_dump($ex);
         }
+                $str='<br a="zza<%asp %>bbbb" <?php echo "OK"?>>';;
+        XmlParser::G(new XmlParser())->insert_data($str);
+        XmlParser::G()->parse();
+        $this->do_script();
+        
+        
         try{
-            $str='<script></script>';;
-            XmlParser::G(new XmlParser())->insert_data($str);
-            XmlParser::G()->parse();
             
-            $str='<script><?echo OK ?></script>';;
+            $str='<a>zzz</b>';;
             XmlParser::G(new XmlParser())->insert_data($str);
             XmlParser::G()->parse();
         }catch(\Throwable $ex){
-            var_dump($ex);
+            //var_dump($ex);
+        }
+        
+        
+        $str='<br href="ab<?c?>" >';
+        XmlParser::G(new XmlParser())->insert_data($str);
+        XmlParser::G()->stop_parse_serverfrag=true;
+        XmlParser::G()->parse();
+        
+        try{
+        $str='<tag fadf fadfds sdfaf';
+        XmlParser::G(new XmlParser())->insert_data($str);
+        
+        XmlParser::G()->parse();
+        }catch(\Throwable $ex){
+            //var_dump($ex);
+        }
+        try{
+        $str='<>';
+        XmlParser::G(new XmlParser())->insert_data($str);
+        
+        XmlParser::G()->parse();
+        }catch(\Throwable $ex){
+            //var_dump($ex);
+        }
+        
+         try{
+        $str='</!-->';
+        XmlParser::G(new XmlParser())->insert_data($str);
+        
+        XmlParser::G()->parse();
+        }catch(\Throwable $ex){
+            //var_dump($ex);
         }
         //XmlParser::G()->insert_data("abc",3);
         
         ////
-        
-do{
-        //XmlParser::G()->__construct($handle);
-break;
-        
-        XmlParser::G()->call($handle,$arg);
-        XmlParser::G()->insert_data($ext_data,$shift_line=false);
-        XmlParser::G()->error_handle($line,$type,$info);
+        echo "--------------------------------\n";
+        $str='<script>fafsdf';
+        XmlParser::G(new XmlParser())->insert_data($str);
+        XmlParser::G()->handle=new Handler();
         XmlParser::G()->parse();
-        XmlParser::G()->parse_text();
-        XmlParser::G()->parse_tagend();
-        XmlParser::G()->parse_notation();
-        XmlParser::G()->parse_pi();
-        XmlParser::G()->parse_asp();
-        XmlParser::G()->parse_tag();
-        XmlParser::G()->parse_script();
-        XmlParser::G()->parse_serverattr($attrs);
-        XmlParser::G()->parse_serverfrag($str);
-        XmlParser::G()->parse_serverfrag_callback($match);
-        XmlParser::G()->is_matchtagname($lasttagname);
-        XmlParser::G()->error_info($info);
-        XmlParser::G()->preg_splitdata($pattern,$text);
-}while(false);
-        
+       
         \MyCodeCoverage::G()->end(XmlParser::class);
         $this->assertTrue(true);
     }
@@ -98,8 +115,43 @@ break;
         $str='<?=$x ?>>';
         $a=XmlParser::ToAttrs($str,$match_byte);
     }
+    protected function do_script()
+    {
+        try{
+            $str='<script></script>';;
+            XmlParser::G(new XmlParser())->insert_data($str);
+            XmlParser::G()->parse();
+            
+            $str='<script>aa<?echo OK ?>bb<% aa%>cc</script>';;
+            XmlParser::G(new XmlParser())->insert_data($str);
+            XmlParser::G()->parse();
+        }catch(\Throwable $ex){
+            //var_dump($ex);
+        }
+        try{
+            $str='<script>fafsdf';
+            XmlParser::G(new XmlParser())->insert_data($str);
+            XmlParser::G()->parse();
+        }catch(\Throwable $ex){
+            //var_dump($ex);
+        }
+        try{
+            $str='<script>fafsd<? f</script>';
+            XmlParser::G(new XmlParser())->insert_data($str);
+            XmlParser::G()->parse();
+        }catch(\Throwable $ex){
+            //var_dump($ex);
+        }
+    }
 }
-class MyXmlParser extends XmlParser
+class Handler
 {
-    
+    public function tagbegin_handle($data)
+    {
+        return $data;
+    }
+    public function error_handle($data)
+    {
+        var_dump($data);
+    }
 }
