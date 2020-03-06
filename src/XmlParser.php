@@ -140,7 +140,7 @@ class XmlParser
         $p_tagheadbegin = '/^<([0-9a-zA-Z_\x7f-\xff:\-]+)/s';
         
         while (strlen($this->data)) {
-            if ("<" != $this->data{0}) {
+            if ('<' !== substr($this->data, 0, 1)) {
                 $this->parse_text();
             } elseif (0 == strncmp($this->data, static::NOTATION_BEGIN, static::NOTATION_BEGIN_LENGTH)) {
                 $this->parse_notation();
@@ -153,12 +153,9 @@ class XmlParser
                 $this->parse_tag();
             } elseif (0 == strncmp($this->data, static::ASP_BEGIN, static::ASP_BEGIN_LENGTH)) {
                 $this->parse_asp();
-            } elseif (substr($this->data, 0, 1) == '<') {
+            } else {
                 $this->data = substr($this->data, 1);
                 $this->call('text_handle', '<');
-            } else {
-                $this->error_info('UnmatchedData');
-                return;
             }
         }
     }
@@ -331,7 +328,7 @@ class XmlParser
         }
         
         $text = substr($data, 0, $pos);
-        if (false === strpos($text, static::PI_BEGIN) && false === strpos($text, static::PI_BEGIN)) {
+        if (false === strpos($text, static::PI_BEGIN) && false === strpos($text, static::ASP_BEGIN)) {
             $data = substr($data, $pos);
             $this->call('text_handle', $text);
             $this->current_line += substr_count($text, "\n");
@@ -421,7 +418,7 @@ class XmlParser
     }
     protected function error_info($info)
     {
-        $this->error_handle($this->current_line, $info, substr($this->data, 0, 100));
+        return $this->error_handle($this->current_line, $info, substr($this->data, 0, 100));
     }
     protected function preg_splitdata($pattern, $text)
     {

@@ -10,7 +10,7 @@ class XmlParserTest extends \PHPUnit\Framework\TestCase
         
         $this->do_testattrs();
         
-        $str='text<!--notation--><tag></tag><%asp%><?pi ?>annother<';;
+        $str='text<!--notation--><tag><a b="c"><d /><br></a></tag><%asp%><?pi ?>annother<';;
         XmlParser::G()->insert_data($str,true);
         XmlParser::G()->parse();
         
@@ -32,10 +32,30 @@ class XmlParserTest extends \PHPUnit\Framework\TestCase
             //var_dump($ex);
         }
         
-        $str='<![CDATA[';;
+        $str='<![CDATA[ xxx ]]]><!doctype html><!fadfd';;
         XmlParser::G(new XmlParser())->insert_data($str);
         XmlParser::G()->parse();
         
+        
+        try{
+            $str='<a x=<??> b="a<% afsaf %>b" <?=ok?>></a>';;
+            XmlParser::G(new XmlParser())->insert_data($str);
+            
+            XmlParser::G()->parse();
+        }catch(\Throwable $ex){
+            var_dump($ex);
+        }
+        try{
+            $str='<script></script>';;
+            XmlParser::G(new XmlParser())->insert_data($str);
+            XmlParser::G()->parse();
+            
+            $str='<script><?echo OK ?></script>';;
+            XmlParser::G(new XmlParser())->insert_data($str);
+            XmlParser::G()->parse();
+        }catch(\Throwable $ex){
+            var_dump($ex);
+        }
         //XmlParser::G()->insert_data("abc",3);
         
         ////
