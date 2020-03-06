@@ -5,10 +5,16 @@
  */
 namespace TagFeather;
 
+use TagFeather\SingletonEx;
+
 class Builder //extends Hookmanager implements IHandleCallback
 {
+    use SingletonEx;
+    
     /** @var array Important to extends ,tag stack */
-    public $tagStack = array(array("\ntext" => ''));
+    public $tagStack = [
+        ["\ntext" => ''],
+    ];
     /** @var string data to parse */
     public $data = '';
     
@@ -31,8 +37,6 @@ class Builder //extends Hookmanager implements IHandleCallback
     /** @var TF_Handle the handle call by parser */
     public $handle = null;
     public $builder_callback = null;
-    /** */
-    private $key_text = "\ntext";
     /** Constructor */
     public function __construct()
     {
@@ -56,6 +60,7 @@ class Builder //extends Hookmanager implements IHandleCallback
     public function addLastTagText($str)
     {
         if ($str !== '') {
+            $this->key_text="\ntext";
             $this->tagStack[sizeof($this->tagStack) - 1][$this->key_text] .= $str;
         }
     }
@@ -75,7 +80,7 @@ class Builder //extends Hookmanager implements IHandleCallback
      */
     public function needReturnAspPi()
     {
-        $to_returntext = $this->parser->is_asp_pi_frag;
+        $to_returntext = $this->parser ? $this->parser->is_asp_pi_frag :true;
         return $to_returntext;
     }
     /**
@@ -117,10 +122,13 @@ class Builder //extends Hookmanager implements IHandleCallback
         //if( !array_key_exists("\ntagname",$attrs) ){
         //	$attrs["\ntagname"]=end($this->parser->tagnames);
         //}
-        $keeptext = (!in_array($attrs["\ntagname"], $this->parser->single_tag))?true:false;
-        $text = self::TagToText($attrs, "\nfrag", $keeptext);
+        $keeptext=true;
+        if($this->parser){
+            $keeptext = (!in_array($attrs["\ntagname"], $this->parser->single_tag))?true:false;
+        }
+        $text = static::TagToText($attrs, "\nfrag", $keeptext);
         $this->addLastTagText($text);
-        return array();
+        return;
     }
     ///////////////////////////////////////////////////////////////////////////
     /**
@@ -247,7 +255,7 @@ class Builder //extends Hookmanager implements IHandleCallback
      */
     public static function GetTagName($attrs)
     {
-        return $attrs["\ntagname"];
+        return $attrs["\ntagname"] ?? null;
     }
     /**
      *
@@ -287,9 +295,9 @@ class Builder //extends Hookmanager implements IHandleCallback
      */
     public static function TagToText($attrs, $pre_frag = "\nfrag", $keeptext = true)
     {
-        $tagname = $attrs["\ntagname"];
+        $tagname = $attrs["\ntagname"] ?? null;
         $ret = '';
-        $text = $attrs["\ntext"];
+        $text = $attrs["\ntext"] ?? '';
         if ($tagname) {
             $pre_frag_len = strlen($pre_frag);
             
@@ -301,7 +309,7 @@ class Builder //extends Hookmanager implements IHandleCallback
                     $headdata[] = "$value";
                     continue;
                 }
-                if ($key{0} != "\n") {
+                if (substr($key,0,1) != "\n") {
                     $headdata[] = "$key=\"$value\"";
                 }
             }
@@ -315,7 +323,7 @@ class Builder //extends Hookmanager implements IHandleCallback
                 $ret .= ">$text</$tagname>";
             }
         } else {
-            $ret = $attrs["\ntext"];
+            $ret = $attrs["\ntext"] ?? '';
         }
         if (array_key_exists("\nposttag", $attrs)) {
             $ret = $ret.$attrs["\nposttag"];

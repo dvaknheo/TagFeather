@@ -61,7 +61,7 @@ class Helper
      */
     public static function MatchClass($class, $subclass)
     {
-        return in_array($subclass, self::SplitClass($class));
+        return in_array($subclass, static::SplitClass($class));
     }
     /**
      *
@@ -93,7 +93,6 @@ class Helper
             $pos_end = ($pos_end === false)?strlen($data):$pos_end + strlen($str2);
         } else {
             $pos_begin = ($pos_begin === false)?0:$pos_begin + strlen($str1);
-            ;
             $pos_end = ($pos_end === false)?strlen($data):$pos_end;
         }
         
@@ -133,17 +132,14 @@ class Helper
     }
     /**
      */
-    public static function ToHiddenAttrs($attrs, $go = true)
+    public static function ToHiddenAttrs($attrs)
     {
-        if (!$go) {
-            return $attrs;
-        }
         $ext_attrs = array(
                 'tf:notag' => true,'tf:notext' => true ,
                 'tf:pretag' => '','tf:posttag' => '','tf:pretext' => '','tf:posttext' => '',
             );
         $attrs = array_merge($attrs, $ext_attrs);
-        unset($array["\ntext"]);
+        unset($attrs["\ntext"]);
         return $attrs;
     }
     /**

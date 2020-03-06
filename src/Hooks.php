@@ -5,7 +5,7 @@
  */
 namespace TagFeather;
 
-use Helper;
+use TagFeather\Helper;
 
 class Hooks
 {
@@ -1667,7 +1667,7 @@ class Hooks
         case 'tagend':
             if (!is_array($attrs)) {
                 return $attrs;
-            }//var_dump($attrs);die(__FUNCTION__."::".__LINE__);}
+            }
             $attrs = Helper::call_tagblock_hook("tagname_".$attrs["\ntagname"], $attrs, $tf, $hooktype);
             $attrs = Helper::call_tagblock_hook("id_".$attrs['id'], $attrs, $tf, $hooktype);
             $attrs = Helper::call_tagblock_hook("name_".$attrs['name'], $attrs, $tf, $hooktype);
