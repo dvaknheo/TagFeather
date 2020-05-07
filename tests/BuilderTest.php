@@ -11,6 +11,19 @@ class BuilderTest extends \PHPUnit\Framework\TestCase
         //code here
         $this->do_static();
         $this->do_handler();
+        echo "=============================\n";
+$data=<<<EOT
+
+<!doctype html>
+<html>
+<body>
+<div style='border:1px solid red'>xxx</div>
+</body>
+</html>
+EOT;
+        echo (new Builder())->run($data);
+        
+        
         
         \MyCodeCoverage::G()->end(Builder::class);
         $this->assertTrue(true);
@@ -69,12 +82,26 @@ class BuilderTest extends \PHPUnit\Framework\TestCase
     protected function do_handler()
     {
         $str='';
+        Builder::G()->asp_frag_handle($str);
+        Builder::G()->pi_frag_handle($str);
         Builder::G()->asp_handle($str);
         Builder::G()->cdata_handle($str);
         Builder::G()->comment_handle($str);
         Builder::G()->notation_handle($str);
         Builder::G()->pi_handle($str);
         Builder::G()->text_handle($str);
+        
+        $error_array = array(
+            'source' => 'parser',
+            //'file'=>$file,
+            'line' => 'line',
+            'type' => 'type',
+            'info' => 'info',
+            //'level'=>$level,
+        );
+        Builder::G()->error_handle($error_array);
+        
+        
         
         $tagname="zz";
         $attrs=[

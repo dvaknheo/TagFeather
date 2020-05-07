@@ -39,7 +39,7 @@ class XmlParser
     /** @var string Data to parse */
     public $data;
     /** @var array tag who has no text */
-    public $single_tag = array(
+    public $single_tag = [
         'area',
         'base',
         'basefont',
@@ -53,7 +53,7 @@ class XmlParser
         'link',
         'meta',
         'param',
-    );
+    ];
     /** @var int config tag frag mode */
     public $tag_frag_mode = self::ATTR_FRAG_COMMON;
     /** @var string config tag frag pre */
@@ -65,28 +65,28 @@ class XmlParser
     /** @var int line parseed ,to point out the error line */
     public $current_line = 1;
     
-    /** @var bool is parsing server attribute */
-    public $is_asp_pi_frag = false;
     /** @var bool stop_parse servertag ,for more quick */
     public $stop_parse_serverfrag = false;
     /** @  current tag close by  /> .unlike >. can't insert data as child */
     public $is_current_tag_notext = false;
     public $timecost = 0;
     /** @var array for this->parse_tag()*/
-    public $tagnames = array();
-    private $timeinit = 0;
-    private $tomatchtag_line = 1;
-    
-    protected $is_error = false;
+    public $tagnames = [];
+    protected $timeinit = 0;
+    protected $tomatchtag_line = 1;
+    protected $is_error = false;    
     protected $parsing_attrs;
-    /**
-     * constructor
-     *
-     */
-    public function __construct($handle = null)
+    public function __construct()
     {
-        $this->handle = $handle;
+    }
+    public function run(string $data, $handle=null)
+    {
+        $this->handle=$handle;
+        $this->data=$data;
+        $this->current_line=1;
         $this->timeinit = microtime(true);
+        
+        return $this->parse();
     }
     public function call($handle, $arg)
     {
@@ -132,7 +132,10 @@ class XmlParser
         }
         $this->data = '';
     }
-
+    public function isSingleTag($tagname)
+    {
+        return (in_array($attrs["\ntagname"], $this->single_tag))?true:false;
+    }
     public function parse()
     {
         $p_tagheadbegin = '/^<([0-9a-zA-Z_\x7f-\xff:\-]+)/s';
@@ -332,8 +335,6 @@ class XmlParser
             $p_attr = "/($PIpattern)|($ASPpattern)/s";
             
             $array = $this->preg_splitdata($p_attr, $text);
-            
-            $this->is_asp_pi_frag = false;
             foreach ($array as $text) {
                 $this->data = substr($this->data, strlen($text));
                 if (static::PI_BEGIN == substr($text, 0, 2) && static::PI_END == substr($text, -2)) {
@@ -360,13 +361,10 @@ class XmlParser
      */
     protected function parse_serverattr($attrs)
     {
-        $this->is_asp_pi_frag = true;
         foreach ($attrs as $key => $str) {
             $str = $this->parse_serverfrag($str);
             $attrs[$key] = $str;
         }
-        $this->is_asp_pi_frag = false;
-        
         return $attrs;
     }
     protected function parse_serverfrag($str)
@@ -395,9 +393,9 @@ class XmlParser
     {
         $str = '';
         if (!empty($match[1])) {
-            $str = $this->call('pi_handle', $match[1]);
+            $str = $this->call('pi_frag_handle', $match[1]);
         } elseif (!empty($match[3])) {
-            $str = $this->call('asp_handle', $match[3]);
+            $str = $this->call('asp_frag_handle', $match[3]);
         }
         return $str;
     }

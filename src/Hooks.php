@@ -1038,7 +1038,7 @@ class Hooks
         $filename = $tf->get_abspath($filename, true);
         $data = ($filename)?file_get_contents($filename):'';
 
-        $tf->parser->insert_data($data);
+        $tf->addTextToParse($data);
         $attrs['tf:struct_lines'] = substr_count($data, "\n");
         $attrs['tf:struct_currentline'] = $tf->parser->current_line;
         
@@ -1388,7 +1388,7 @@ class Hooks
                     $attrs = Helper::ToServerOrNormalAttrs($attrs, false);
                 }
                 $keeptext = (!in_array($attrs["\ntagname"], $tf->parser->single_tag))?true:false;
-                $text = TF_Builder::TagToText($attrs, "\nfrag", $keeptext);
+                $text = Builder::TagToText($attrs, "\nfrag", $keeptext);
                 $tf->addLastTagText($text);
                 $attrs = array();
                 return $attrs;
@@ -1399,8 +1399,12 @@ class Hooks
                 foreach ($purehooktypes as $thehooktype) {
                     $tf->hookmanager->parsehooks[$thehooktype] = $tf->runtime['pure_savedhooktypes'][$thehooktype];
                 }
+                //TODO
                 $attrs = $tf->hookmanager->call_parsehooksbytype($hooktype, $attrs, false);
-                $tf->endTagFinalHandle($attrs);
+                
+                $keeptext = (!in_array($attrs["\ntagname"], $tf->parser->single_tag))?true:false;
+                $text = Builder::TagToText($attrs, "\nfrag", $keeptext);
+                $tf->addLastTagText($text);
                 
                 $tf->hookmanager->stop_nexthooks();
                 $attrs = array();
@@ -1464,7 +1468,7 @@ class Hooks
             return $attrs;
         }
         $phpfile = $tf->runtime['phpincmap'][$htmlfile];
-        $tf->parser->insert_data("<\x3fphp include(\"".addslashes($phpfile)."\"); \x3f>");
+        $tf->addTextToParse("<\x3fphp include(\"".addslashes($phpfile)."\"); \x3f>");
         $tf->hookmanager->stop_nexthooks();
         return array();
     }
@@ -1540,7 +1544,7 @@ class Hooks
         };
         $tf->runtime['ssidel'][] = $id;
         $str = Helper::UniqString($id)."_begin";
-        $tf->parser->insert_data($str);
+        $tf->addTextToParse($str);
         return array();
     }
     /** ssi:delend */
@@ -1554,7 +1558,7 @@ class Hooks
             $id = $tf->runtime['ssidel_lastid'];
         };
         $str = Helper::UniqString($id)."_end";
-        $tf->parser->insert_data($str);
+        $tf->addTextToParse($str);
         return array();
     }
     /** ssi:tagbegin */
@@ -1580,7 +1584,7 @@ class Hooks
         
         $keeptext = (!in_array($newattrs["\ntagname"], $tf->parser->single_tag))?true:false;
         $text = TF_Builder::TagToText($newattrs, "\nfrag", $keeptext);
-        $tf->builder->addLastTagText($text);
+        $tf->addLastTagText($text);
         return array();
     }
     /** ssi:tag */

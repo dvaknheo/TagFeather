@@ -10,83 +10,67 @@ use TagFeather\SingletonEx;
 class Builder implements IXmlParserCallback
 {
     use SingletonEx;
-    
-    /** @var array Important to extends ,tag stack */
+
+    public $runtime = [];
+
     public $tagStack = [
         ["\ntext" => ''],
     ];
-    /** @var string data to parse */
-    public $data = '';
     
-    /** @var array this is the config array ,use it freely */
-    public $config = array();
-    /** @var array this array is for your hook ,use it freely */
-    public $runtime = array();
+    /** @var string data to parse */
+    public $data = ''; //TODO 这也有一个地方用到
 
-    /** @var bool flag to data is builded */
-    public $has_build = false;
+    protected $has_build = false;
     /** @var bool is error ?  */
     public $is_build_error = false;
     /** @var string error infomation  */
     public $build_error_msg = 'Build Error';
 
-    /** @var TF_XmlParser the parser*/
-    public $parser = null;
-    /** @var TF_HookManager the hookmanager */
-    //public $hookmanager=null;
-    /** @var TF_Handle the handle call by parser */
-    public $handle = null;
-    public $builder_callback = null;
-    /** Build $this->data */
-    public function build()
+    public $parser = null;  //TODO to protected
+    protected $callback = null;
+    
+    public function __construct()
     {
-        $this->parser = new XmlParser($this);
-        
+        //
+    }
+    public function run($data)
+    {
+        $this->data = $data;
         $this->data = $this->callHooksByType('prebuild', $this->data, true);
         
-        $this->parser->data = $this->data;
-        $this->parser->parse();
+        $this->parser = new XmlParser();
+        $this->parser->run($this->data,$this);
         
-        $this->data = $this->tagStack[0]["\ntext"];
-        $this->data = $this->callHooksByType('postbuild', $this->data, false);
-        
-        $this->has_build = true;
-        return $this->is_build_error;
+        $data = $this->tagStack[0]["\ntext"] ?? '';
+        $data = $this->callHooksByType('postbuild', $data, false);    
+        return $data;
+    }
+    public function setCallback($handler)
+    {
+        $this->callback = $handler;
+    }
+    public function addTextToParse($ext_data, $shift_line = false)
+    {
+        return $this->parser->insert_data($ext_data, $shift_line);
     }
     ///////////////////////////////////////////////////////////////////////////
     public function addLastTagText($str)
     {
-        if ($str !== '') {
-            $this->key_text = "\ntext";
-            $this->tagStack[sizeof($this->tagStack) - 1][$this->key_text] .= $str;
-        }
+        $i = sizeof($this->tagStack) - 1;
+        $this->tagStack[$i]["\ntext"] =$this->tagStack[$i]["\ntext"] ??'';
+        $this->tagStack[$i]["\ntext"] .= $str;
     }
-    /**
-     * implement IHandleCallback
-     */
     public function callHooksByType($hooktype, $arg, $queque_mode = false)
     {
-        if (null !== $this->builder_callback) {
-            return call_user_func($this->builder_callback, $hooktype, $arg, $queque_mode, $this);
-        } else {
+        if (null === $this->callback) {
             return $arg;
         }
+        return call_user_func($this->callback, $hooktype, $arg, $queque_mode, $this);
     }
-    /**
-     * implement IHandleCallback
-     */
-    public function needReturnAspPi()
-    {
-        $to_returntext = $this->parser ? $this->parser->is_asp_pi_frag :true;
-        return $to_returntext;
-    }
-    /**
-     * implement IHandleCallback
-     */
-    public function errorFinalHandle($e)
+    protected function errorFinalHandle($e)
     {
         if (!$e) {
-            return;
+            return [];
         }
         $error_msg =
             "Builder Parser Error: <br />\n".
@@ -97,37 +81,39 @@ class Builder implements IXmlParserCallback
         
         $str = '';
         foreach ($this->tagStack as $tag) {
-            if ($tag["\ntagname"]) {
-                $index = "<sup>".$tag["\ntf index"]."</sup>";
+            $tagname=$tag["\ntagname"]??null;
+            if ($tagname) {
+                $index = "<sup>".($tag["\ntf index"]??'')."</sup>";
             }
-            $str .= "/".$tag["\ntagname"];
+            $str .= "/".$tagname;
         }
         $error_msg .= $str;
-        $this->parser->data = ""; // to stop next paser;
         $this->is_build_error = true;
         $this->build_error_msg = $error_msg;
-        return array();
+        return [];
     }
-    /**
-     * implement IHandleCallback
-     */
-    public function endTagFinalHandle($attrs)
+    public function isSingleTag($tag)
     {
-        if (!$attrs) {
-            return ;
-        }
+        if(!$this->parser){ return false; }
+        return $this->parser->isSingleTag($tag);
+    }
+    protected function endTagFinalHandle($attrs)
+    {
+        
+        //TODO 研究这里。
         //if( !array_key_exists("\ntagname",$attrs) ){
         //	$attrs["\ntagname"]=end($this->parser->tagnames);
         //}
-        $keeptext = true;
-        if ($this->parser) {
-            $keeptext = (!in_array($attrs["\ntagname"], $this->parser->single_tag))?true:false;
-        }
+        $keeptext = $this->isSingleTag($attrs["\ntagname"]??null);
         $text = static::TagToText($attrs, "\nfrag", $keeptext);
         $this->addLastTagText($text);
         return;
     }
     ///////////////////////////////////////////////////////////////////////////
+    public function asp_frag_handle($str)
+    {
+        return $this->callHooksByType('asp', $str);
+    }
     /**
      *  asp handle for TF_XMLParser
      *
@@ -136,14 +122,7 @@ class Builder implements IXmlParserCallback
      */
     public function asp_handle($str)
     {
-        $to_returntext = $this->needReturnAspPi();
-        $str = $this->callHooksByType('asp', $str);
-        if ($to_returntext) {
-            return $str;
-        } else {
-            $this->addLastTagText($str);
-            return;
-        }
+        $this->addLastTagText($str);
     }
     /**
      * cdata handle for TF_XMLParser
@@ -184,7 +163,6 @@ class Builder implements IXmlParserCallback
      */
     public function error_handle($error_info)
     {
-        $file = $this->tf->source;
         $error_array = array(
             'source' => 'parser',
             //'file'=>$file,
@@ -196,6 +174,10 @@ class Builder implements IXmlParserCallback
         $error_array = $this->callHooksByType('error', $error_array);
         $this->errorFinalHandle($error_array);
     }
+    public function pi_frag_handle($str)
+    {
+        return $this->callHooksByType('pi', $str);
+    }
     /**
      *  pi handle for TF_XMLParser
      *
@@ -205,14 +187,7 @@ class Builder implements IXmlParserCallback
      */
     public function pi_handle($str)
     {
-        $to_returntext = $this->needReturnAspPi();
-        $str = $this->callHooksByType('pi', $str);
-        if ($to_returntext) {
-            return $str;
-        } else {
-            $this->addLastTagText($str);
-            return;
-        }
+        return $this->addLastTagText($str);
     }
     /**
      *  tagbegin handle for TF_XMLParser

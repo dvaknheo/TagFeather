@@ -141,7 +141,9 @@ class TagFeather extends Builder
         }
         
         $this->builder->data = file_get_contents($this->template_dir.$this->source);
+        
         $this->builder->build(); // this method extends from TF_Compiler;
+        
         if ($this->builder->is_build_error) {
             return "";
         }
@@ -201,7 +203,6 @@ class TagFeather extends Builder
     {
         parent::__construct();
         
-        $this->builder = $this;
         $this->hookmanager = new HookManager();
         $this->selector = new Selector();
         
@@ -226,7 +227,7 @@ class TagFeather extends Builder
         );
         $this->hookmanager->parsehooks = $ext_parsehooks;
         
-        $this->builder->builder_callback = array(&$this->hookmanager,'call_parsehooksbytype');
+        $this->setCallback([$this->hookmanager,'call_parsehooksbytype']);
         $this->hookmanager->manager_callback = $this;
         $this->hookmanager->parsehooks['modifier'] = array();
         $this->hookmanager->parsehooks['ssi'] = array();
