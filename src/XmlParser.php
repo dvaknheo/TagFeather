@@ -134,7 +134,7 @@ class XmlParser
     }
     public function isSingleTag($tagname)
     {
-        return (in_array($attrs["\ntagname"], $this->single_tag))?true:false;
+        return (in_array($tagname, $this->single_tag))?true:false;
     }
     public function parse()
     {
@@ -438,8 +438,10 @@ class XmlParser
      *
      * @return array assoc
      */
-    public static function ToAttrs(string $str, &$match_byte, $flag = self::ATTR_FRAG_COMMON, $frag_prefix = "\n")
+    public static function ToAttrs(string $str, &$match_byte, $flag = null, $frag_prefix = "\n")
     {
+        $flag=$flag?:static::ATTR_FRAG_COMMON;
+        
         $PIpattern = '<'.'\?.*?\?'.'>';
         $ASPpattern = '<'.'%.*?%'.'>';
         $bool_pattern = '[a-zA-Z:_]+';
@@ -456,22 +458,22 @@ class XmlParser
         $attr_pattern_part2 = '((('.$PIpattern.')|('.$ASPpattern.')|[^\'"]+)*)';
         
         $patterns_array = array();
-        if ($flag | self::ATTR_FRAG_PI) {
+        if ($flag | static::ATTR_FRAG_PI) {
             $patterns_array[] = $PIpattern;
         }
-        if ($flag | self::ATTR_FRAG_ASP) {
+        if ($flag | static::ATTR_FRAG_ASP) {
             $patterns_array[] = $ASPpattern;
         }
-        if ($flag | self::ATTR_FRAG_BOOL) {
+        if ($flag | static::ATTR_FRAG_BOOL) {
             $patterns_array[] = $bool_pattern;
         }
-        if ($flag | self::ATTR_FRAG_COMMENT) {
+        if ($flag | static::ATTR_FRAG_COMMENT) {
             $patterns_array[] = $comment_pattern;
         }
-        if ($flag | self::ATTR_FRAG_BRACE) {
+        if ($flag | static::ATTR_FRAG_BRACE) {
             $patterns_array[] = $qoute_pattern;
         }
-        if ($flag | self::ATTR_FRAG_VAR) {
+        if ($flag | static::ATTR_FRAG_VAR) {
             $patterns_array[] = $var_pattern;
         }
 

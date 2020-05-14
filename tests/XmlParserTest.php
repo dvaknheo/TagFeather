@@ -99,6 +99,10 @@ class XmlParserTest extends \PHPUnit\Framework\TestCase
         XmlParser::G(new XmlParser())->insert_data($str);
         XmlParser::G()->handle=new Handler();
         XmlParser::G()->parse();
+        XmlParser::G()->isSingleTag('br');
+        
+        
+        XmlParser::G()->run('<b>zz</b>');
        
         \MyCodeCoverage::G()->end(XmlParser::class);
         $this->assertTrue(true);
