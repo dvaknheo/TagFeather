@@ -27,7 +27,9 @@ class HelperTest extends \PHPUnit\Framework\TestCase
 
         $y=Helper::SliceReplace("1a zzz b2\n",'yyy',"a",'b', true, $wrap = false);
         echo $y;
-
+        $y=Helper::SliceReplace("1a zzz b2\n",'yyy',"a1",'bx', true, $wrap = false);
+        echo $y;
+        
         Helper::ToBlankAttrs([]);
         Helper::ToHiddenAttrs([]);
         $attrs=[];$ext_attrs=[];
@@ -51,8 +53,32 @@ a <?php b?>
         Helper::ToServerOrNormalAttrs($attrs,true);
         Helper::ToServerOrNormalAttrs($attrs,false);
         
+
+    
+        //
+        $attrs=[
+            'text'=>'abc',
+        ];
+        Helper::TagToText($attrs);
+        
+        $attrs=[
+            "\ntagname"=>'tag',
+            'text'=>'abc',
+            "\npretag"=>'pretag',
+            "\nposttag"=>'posttag',
+            "aa"=>"bb",
+            "\nfrag"=>"haha",
+        ];
+        $str=Helper::TagToText($attrs);
+        echo $str;
         
         
+        $attrs=[
+            "\ntagname"=>'tag',
+        ];
+        $str=Helper::TagToText($attrs,"\nfrag",false);
+        echo $str;
+     
         
         \MyCodeCoverage::G()->end(Helper::class);
         $this->assertTrue(true);

@@ -7,6 +7,12 @@ namespace TagFeather;
 
 class TagFeather extends Builder
 {
+    use SingletonEx;
+    public  $options=[
+        'source'=>'',
+        'dest'=>'',
+        'is_forcebuild'=>false,
+    ];
     ////public $feathers=array();		//$key=>$value; //no used TO Regard init version;
     /** @var string source file to build . */
     public $source = '';
@@ -47,24 +53,18 @@ class TagFeather extends Builder
     public $seletor = null;
     
     ///////////////////////////////////////////////////////////////////////////
-    /** Set the source .By default,it is the SCRIPT_FILENAME (by modifier_filename)
-     * @param string $filename
-     * @return void
-     */
-    public function set_source($filename)
+    public function init(array $options, object $context = null)
     {
-        $this->source = $filename;
+        $this->options = array_intersect_key(array_replace_recursive($this->options, $options) ?? [], $this->options);
+        
+        $this->source = $this->options['source'];
+        $this->dest = $this->options['dest'];
+        $this->is_forcebuild = $this->options['is_forcebuild'];
+        
     }
-    /**
-     * Set the destfile to write ,By default,it is the basename of source end with .cache.php
-     * e.g.  source: index.php  =>  dest : index.cache.php
-     * @param string $filename
-     * @return void
-     */
-    public function set_dest($filename)
-    {
-        $this->dest = $filename;
-    }
+    
+
+
     /**
      * Set the cache directory
      * @param string $cache_dir
@@ -92,22 +92,6 @@ class TagFeather extends Builder
         }
         $template_dir = rtrim($template_dir, '/').'/';
         $this->template_dir = $template_dir;
-    }
-    /**
-     * Set that if ignore judge filetime just build , usually in debug,or prototype develop
-     * @param bool $force
-     * @return void
-     */
-    public function forcebuild($force = true)
-    {
-        $this->is_forcebuild = $force;
-    }
-    /**
-     * check is build
-     */
-    public function is_build()
-    {
-        return $this->has_build;
     }
     ///////////////////////////////////////////////////////////////////////////
     /** add struct file to build
@@ -325,16 +309,16 @@ class TagFeather extends Builder
         }
         //////////////////////////
         $quick = array(
-        'ssidel' => array(),
-        'showonce' => array(),
-        'rewriteall' => array(),
-        'byhref' => array(),
-        'byvisible' => array(),
-        'bycookie' => array(),
-        'bind' => array(),
-        'phplang' => array(),
-        'textmap' => array(),
-        'attrmap' => array(),
+            'ssidel' => array(),
+            'showonce' => array(),
+            'rewriteall' => array(),
+            'byhref' => array(),
+            'byvisible' => array(),
+            'bycookie' => array(),
+            'bind' => array(),
+            'phplang' => array(),
+            'textmap' => array(),
+            'attrmap' => array(),
         );
         $this->runtime = array_merge($this->runtime, $quick);
         
@@ -351,7 +335,7 @@ class TagFeather extends Builder
      *
      * @param string $filename the filename to include;
      */
-    public function getTemplateFile($source, $ignore_in_cache = false, $is_forcebuild = false)
+    protected function getTemplateFile($source, $ignore_in_cache = false, $is_forcebuild = false)
     {
         if (!$ignore_in_cache && $GLOBALS['TF_IN_CACHE']) {
             return false;
@@ -368,7 +352,7 @@ class TagFeather extends Builder
     */
     public function display($filename = "", $structfile = "")
     {
-        if ($GLOBALS['TF_IN_CACHE']) {
+        if ($GLOBALS['TF_IN_CACHE']??false) {
             return;
         }
         if ($structfile) {
@@ -435,7 +419,7 @@ class TagFeather extends Builder
             } else {
                 $hooktype = $the_type;
             }
-            $this->hookmanager->add_parsehook(array('TF_Hooks',$hookname), $hooktype);
+            $this->hookmanager->add_parsehook(array('Hooks',$hookname), $hooktype);
         }
     }
 }

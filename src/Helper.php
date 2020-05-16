@@ -98,30 +98,7 @@ class Helper
         
         return substr_replace($data, $replacement, $pos_begin, $pos_end - $pos_begin);
     }
-    /**
-     * call tf_{$str_func} at tagbegin and tagend;
-     * call tfbegin_{$str_func} at tagbegin;
-     * call tfend_{$str_func} at tagend;
-     *
-     * @param $str_func
-     * @param $attrs
-     * @param $tf TagFeather Object
-     * @param $type  'tagbegin'/'tagend'
-     * @return array new $attrs;
-     */
-    public static function call_tagblock_hook($str_func, $attrs, $tf, $type)
-    {
-        if (is_callable('tf_'.$str_func)) {
-            $rc = call_user_func('tf_'.$str_func, $attrs, $tf, $type);
-        } elseif ($type == 'tagbegin' && is_callable('tf_tagbegin_'.$str_func)) {
-            $rc = call_user_func('tf_tagbegin_'.$str_func, $attrs, $tf, $type);
-        } elseif ($type == 'tagend' && is_callable('tf_tagend_'.$str_func)) {
-            $rc = call_user_func('tf_tagend_'.$str_func, $attrs, $tf, $type);
-        } else {
-            $rc = $attrs;
-        }
-        return $rc;
-    }
+
     /**
      */
     public static function ToBlankAttrs($attrs)
@@ -180,16 +157,16 @@ class Helper
         return $attrs;
     }
     /**
-     *
+     * to move
      */
-    public static function DumpTagStackString($tf)
+    public static function DumpTagStackString($tagStack)
     {
-        $l = sizeof($tf->tagStack);
+        $l = sizeof($tagStack);
         if ($l == 1) {
             return '';
         }
         $str = '';
-        foreach ($tf->tagStack as $tag) {
+        foreach ($tagStack as $tag) {
             $id = '';
             $class = '';
             if ($tag['id']) {
@@ -217,19 +194,6 @@ class Helper
         }
         $id = md5($id);
         return 'TF_{'.$id.'}';
-    }
-    /**
-     *
-     */
-    public static function InsertDataAndFile($tf, $data, $filename)
-    {
-        if ($filename) {
-            $filename = $tf->get_abspath($filename, true);
-            $data = file_get_contents($filename);
-        } else {
-            $tf->parser->current_line -= substr_count($data, "\n");
-        }
-        $tf->parser->insert_data($data);
     }
     /**
      *
@@ -268,5 +232,52 @@ class Helper
                 unset($attrs[$key]);
             }
         }
+    }
+    /**
+     * Get Tag Text
+     *
+     * @param array $attrs server attributes
+     * @param array $reserve_prefixs
+     * @return string
+     */
+    public static function TagToText($attrs, $pre_frag = "\nfrag", $keeptext = true)
+    {
+        $tagname = $attrs["\ntagname"] ?? null;
+        $ret = '';
+        $text = $attrs["\ntext"] ?? '';
+        if ($tagname) {
+            $pre_frag_len = strlen($pre_frag);
+            
+            $ret = "<$tagname";
+            $len = strlen($ret);
+            $headdata = array();
+            foreach ($attrs as $key => $value) {
+                if (0 === strncmp($key, $pre_frag, $pre_frag_len)) {
+                    $headdata[] = "$value";
+                    continue;
+                }
+                if (substr($key, 0, 1) != "\n") {
+                    $headdata[] = "$key=\"$value\"";
+                }
+            }
+            if ($headdata) {
+                //if(!is_array($headdata)){var_dump($headdata);die;}
+                $ret .= " ".implode(" ", $headdata);
+            }
+            if (!$keeptext && $tagname && (null === $text || "" === $text)) {
+                $ret .= " />";
+            } else {
+                $ret .= ">$text</$tagname>";
+            }
+        } else {
+            $ret = $attrs["\ntext"] ?? '';
+        }
+        if (array_key_exists("\nposttag", $attrs)) {
+            $ret = $ret.$attrs["\nposttag"];
+        }
+        if (array_key_exists("\npretag", $attrs)) {
+            $ret = $attrs["\npretag"].$ret;
+        }
+        return $ret;
     }
 }

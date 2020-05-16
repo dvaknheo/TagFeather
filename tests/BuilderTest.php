@@ -22,23 +22,28 @@ $data=<<<EOT
 </html>
 EOT;
         echo (new Builder())->run($data);
+        ///////////
         
-        
+$data=<<<EOT
+<!doctype html>
+<html>
+<body>
+<div id='z' style='border:1px solid red'>xxx</div>
+</body>
+</html>
+EOT;
+        $b=new Builder();
+        $b->setCallback(function($hooktype, $args, $queque_mode = false,$tf){
+            if($hooktype==='tagend' && isset($args['id']) && $args['id']==='z'){
+                var_dump(get_class($tf));
+                $tf->addTextToParse("abbbbbbbbbbbbbbbbbbbbbbb"); // todo
+            }
+            return $args;
+        });
+        echo $b->run($data);
         
         \MyCodeCoverage::G()->end(Builder::class);
         $this->assertTrue(true);
-        /*
-        Builder::G()->__construct();
-        Builder::G()->__destruct();
-        Builder::G()->build();
-        Builder::G()->addLastTagText($str);
-        Builder::G()->callHooksByType($hooktype,$arg,$queque_mode=false);
-        Builder::G()->needReturnAspPi();
-        Builder::G()->errorFinalHandle($e);
-        Builder::G()->endTagFinalHandle($attrs);
-
-
-        //*/
     }
     protected function do_static()
     {
@@ -91,6 +96,9 @@ EOT;
         Builder::G()->pi_handle($str);
         Builder::G()->text_handle($str);
         
+        
+
+        Builder::G()->tagStack=[["\ntagname"=>'X']];
         $error_array = array(
             'source' => 'parser',
             //'file'=>$file,
@@ -107,7 +115,7 @@ EOT;
         $attrs=[
             "\ntagname"=>$tagname,
         ];
-        Builder::G()->tagbegin_handle($attrs);
+        Builder::G(new Builder())->tagbegin_handle($attrs);
         Builder::G()->tagend_handle($tagname);
         /*
                 Builder::G()->error_handle($error_info);

@@ -9,6 +9,8 @@ class TagFeatherTest extends \PHPUnit\Framework\TestCase
         \MyCodeCoverage::G()->begin(TagFeather::class);
         
         //code here
+        TagFeather::OutBegin();
+        TagFeather::OutEnd();
         
         \MyCodeCoverage::G()->end(TagFeather::class);
         $this->assertTrue(true);

@@ -31,14 +31,13 @@ class Builder implements IXmlParserCallback
     
     public function __construct()
     {
-        //
+        $this->parser = new XmlParser();
     }
     public function run($data)
     {
         $this->data = $data;
         $this->data = $this->callHooksByType('prebuild', $this->data, true);
         
-        $this->parser = new XmlParser();
         $this->parser->run($this->data,$this);
         
         $data = $this->tagStack[0]["\ntext"] ?? '';
@@ -65,13 +64,10 @@ class Builder implements IXmlParserCallback
         if (null === $this->callback) {
             return $arg;
         }
-        return call_user_func($this->callback, $hooktype, $arg, $queque_mode, $this);
+        return ($this->callback)($hooktype, $arg, $queque_mode, $this);
     }
     protected function errorFinalHandle($e)
     {
-        if (!$e) {
-            return [];
-        }
         $error_msg =
             "Builder Parser Error: <br />\n".
             "Line: {$e['line']} <br />\n".
@@ -267,42 +263,6 @@ class Builder implements IXmlParserCallback
      */
     public static function TagToText($attrs, $pre_frag = "\nfrag", $keeptext = true)
     {
-        $tagname = $attrs["\ntagname"] ?? null;
-        $ret = '';
-        $text = $attrs["\ntext"] ?? '';
-        if ($tagname) {
-            $pre_frag_len = strlen($pre_frag);
-            
-            $ret = "<$tagname";
-            $len = strlen($ret);
-            $headdata = array();
-            foreach ($attrs as $key => $value) {
-                if (0 === strncmp($key, $pre_frag, $pre_frag_len)) {
-                    $headdata[] = "$value";
-                    continue;
-                }
-                if (substr($key, 0, 1) != "\n") {
-                    $headdata[] = "$key=\"$value\"";
-                }
-            }
-            if ($headdata) {
-                //if(!is_array($headdata)){var_dump($headdata);die;}
-                $ret .= " ".implode(" ", $headdata);
-            }
-            if (!$keeptext && $tagname && (null === $text || "" === $text)) {
-                $ret .= " />";
-            } else {
-                $ret .= ">$text</$tagname>";
-            }
-        } else {
-            $ret = $attrs["\ntext"] ?? '';
-        }
-        if (array_key_exists("\nposttag", $attrs)) {
-            $ret = $ret.$attrs["\nposttag"];
-        }
-        if (array_key_exists("\npretag", $attrs)) {
-            $ret = $attrs["\npretag"].$ret;
-        }
-        return $ret;
+        return Helper::TagToText($attrs, $pre_frag, $keeptext);
     }
 }
