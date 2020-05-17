@@ -78,7 +78,28 @@ a <?php b?>
         ];
         $str=Helper::TagToText($attrs,"\nfrag",false);
         echo $str;
-     
+        
+        $attrs=[
+            'tf:pretag'=>'tf_pretag1',
+            'tf:pretext'=>'tf_pretag1',
+            'tf:posttext'=>'tf_pretag1',
+            'tf:posttag'=>'tf_pretag1',
+            'tf:lastfrag'=>'tf_pretag1',
+        ];
+        $ext_attrs=[
+            'tf:pretag'=>'pretag',
+            'tf:pretext'=>'pretext',
+            'tf:posttext'=>'posttext',
+            'tf:posttag'=>'posttag',
+            'tf:lastfrag'=>'lastfrag',
+        ];
+        Helper::MergeAttrs($attrs, $ext_attrs);
+        
+        
+        $stack=[[]];
+        Helper::DumpTagStackString($stack);
+        $stack=[['tag'],["\ntagname"=>'x','id'=>'ID','class'=>'a b',]];
+        Helper::DumpTagStackString($stack);
         
         \MyCodeCoverage::G()->end(Helper::class);
         $this->assertTrue(true);
@@ -94,7 +115,6 @@ a <?php b?>
         Helper::ToHiddenAttrs($attrs,$go=true);
         Helper::MergeAttrs($attrs,$ext_attrs);
         Helper::AttrsPrepareAssign($attrs,$extkey);
-        Helper::DumpTagStackString($tf);
         Helper::UniqString($id='');
         Helper::InsertDataAndFile($tf,$data,$filename);
         Helper::GetTextMap($text);

@@ -12,13 +12,11 @@ class TagFeatherTest extends \PHPUnit\Framework\TestCase
         TagFeather::OutBegin();
         TagFeather::OutEnd();
         
+        TagFeather::G()->init(['path'=>__DIR__])->build('xfile');
+        
         \MyCodeCoverage::G()->end(TagFeather::class);
         $this->assertTrue(true);
         /*
-        TagFeather::G()->set_source($filename);
-        TagFeather::G()->set_dest($filename);
-        TagFeather::G()->set_cache_dir($cache_dir);
-        TagFeather::G()->set_template_dir($template_dir);
         TagFeather::G()->forcebuild($force=true);
         TagFeather::G()->is_build();
         TagFeather::G()->add_struct($filename);

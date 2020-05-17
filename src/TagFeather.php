@@ -9,8 +9,9 @@ class TagFeather extends Builder
 {
     use SingletonEx;
     public  $options=[
-        'source'=>'',
-        'dest'=>'',
+        'path',
+        'path_source'=>'',
+        'path_dest'=>'',
         'is_forcebuild'=>false,
     ];
     ////public $feathers=array();		//$key=>$value; //no used TO Regard init version;
@@ -40,8 +41,7 @@ class TagFeather extends Builder
     /** @var int instruct*/
     public $in_struct = 0;
     //$tf->runtime['structendsig']
-    /** @var int random seed s*/
-    public $seed = 0;
+
     
     /** @var TF_Builder builder*/
     public $builder = null;
@@ -61,10 +61,8 @@ class TagFeather extends Builder
         $this->dest = $this->options['dest'];
         $this->is_forcebuild = $this->options['is_forcebuild'];
         
+        return $this;
     }
-    
-
-
     /**
      * Set the cache directory
      * @param string $cache_dir
@@ -191,15 +189,15 @@ class TagFeather extends Builder
         $this->selector = new Selector();
         
         $ext_parsehooks = array(
-            'unreg' => array(),
-            'error' => array(),
+            'unreg' => [],
+            'error' => [],
             
-            'prebuild' => array(),
-            'postbuild' => array(),
-            'tagbegin' => array(),
-            'tagend' => array(),
+            'prebuild' => [],
+            'postbuild' => [],
+            'tagbegin' => [],
+            'tagend' => [],
             
-            'text' => array()	,
+            'text' => [],
             'asp' => array(),
             'pi' => array(),
             'comment' => array(),
@@ -211,10 +209,11 @@ class TagFeather extends Builder
         );
         $this->hookmanager->parsehooks = $ext_parsehooks;
         
+        //override Builder;
         $this->setCallback([$this->hookmanager,'call_parsehooksbytype']);
+        
         $this->hookmanager->manager_callback = $this;
-        $this->hookmanager->parsehooks['modifier'] = array();
-        $this->hookmanager->parsehooks['ssi'] = array();
+        
         $this->initHooks();
     }
     /**
@@ -222,7 +221,7 @@ class TagFeather extends Builder
      */
     protected function initHooks()
     {
-        $build_hooks = array(
+        $build_hooks = [
             'modifier_time',
             'modifier_filename',
             
@@ -301,11 +300,13 @@ class TagFeather extends Builder
             'ssi_tagend',
             'ssi_tag',
             'ssi_include',
-            );
+        ];
+        
+        
         $this->_reg($build_hooks);
         
         foreach ($this->hookmanager->parsehooks as $hooktype => $blank) {
-            $this->hookmanager->add_parsehook(array('TF_Hooks','all_quick_function'), $hooktype);
+            $this->hookmanager->add_parsehook(['TF_Hooks','all_quick_function'], $hooktype);
         }
         //////////////////////////
         $quick = array(
@@ -328,26 +329,19 @@ class TagFeather extends Builder
         //$autowrap= new TF_AutowrapHook();
         //$this->reg_hookobject($autowrap);
     }
-    /**
-     * get  builded template file.
-     * use as :
-     *   include $tagfeather->getTemplateFile($file);
-     *
-     * @param string $filename the filename to include;
-     */
-    protected function getTemplateFile($source, $ignore_in_cache = false, $is_forcebuild = false)
+    protected function _reg($names, $the_type = false)
     {
-        if (!$ignore_in_cache && $GLOBALS['TF_IN_CACHE']) {
-            return false;
+        foreach ($names as $hookname) {
+            if (!$the_type) {
+                $a = explode('_', $hookname);
+                $hooktype = array_shift($a);
+            } else {
+                $hooktype = $the_type;
+            }
+            $this->hookmanager->add_parsehook(array('Hooks',$hookname), $hooktype);
         }
-        //extract($GLOBALS);
-        $GLOBALS['TF_IN_CACHE'] = true;
-        $this->source = $source;
-        if ($is_forcebuild) {
-            $this->forcebuild();
-        }
-        return $this->build_file();
     }
+
     /**
     */
     public function display($filename = "", $structfile = "")
@@ -365,6 +359,7 @@ class TagFeather extends Builder
         }
         exit;
     }
+    //////////////// Ext
     /**
      * include template filename and exit;
      *
@@ -411,15 +406,5 @@ class TagFeather extends Builder
     }
     ////////////////////////////////////////////////////////////////////////////
     /** For more quick  regist system parsehook */
-    protected function _reg($names, $the_type = false)
-    {
-        foreach ($names as $hookname) {
-            if (!$the_type) {
-                $hooktype = array_shift(explode('_', $hookname));
-            } else {
-                $hooktype = $the_type;
-            }
-            $this->hookmanager->add_parsehook(array('Hooks',$hookname), $hooktype);
-        }
-    }
+
 }

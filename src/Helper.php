@@ -123,23 +123,25 @@ class Helper
      */
     public static function MergeAttrs($attrs, $ext_attrs)
     {
-        $newattrs = array_merge($attrs, $ext_attrs);
-        if (array_key_exists('tf:pretag', $attrs)) {
-            $newattrs['tf:pretag'] = $newattrs['tf:pretag'].$attrs['tf:pretag'];
+        $ret = array_merge($attrs, $ext_attrs);
+
+        if (array_key_exists('tf:pretag', $ret)) {
+            $ret['tf:pretag'] = ($ext_attrs['tf:pretag']??'').($attrs['tf:pretag']??'');
         }
-        if (array_key_exists('tf:pretext', $attrs)) {
-            $newattrs['tf:pretext'] = $attrs['tf:pretext'].$newattrs['tf:pretext'];
+        if (array_key_exists('tf:pretext', $ret)) {
+            $ret['tf:pretext'] = ($attrs['tf:pretext']??'').($ext_attrs['tf:pretext']??'');
         }
-        if (array_key_exists('tf:posttext', $attrs)) {
-            $newattrs['tf:posttext'] = $newattrs['tf::posttext'].$attrs['tf::posttext'];
+        if (array_key_exists('tf:posttext', $ret)) {
+            $ret['tf:posttext'] = ($ext_attrs['tf::posttext']??'').($attrs['tf::posttext']??'');
         }
-        if (array_key_exists('tf:posttag', $attrs)) {
-            $newattrs['tf:posttag'] = $attrs['tf:posttag'].$newattrs['tf:posttag'];
+        if (array_key_exists('tf:posttag', $ret)) {
+            $ret['tf:posttag'] = ($attrs['tf:posttag']??'').($ext_attrs['tf:posttag']??'');
         }
-        if (array_key_exists('tf:lastfrag', $attrs)) {
-            $newattrs['tf:lastfrag'] = $attrs['tf:lastfrag']." ".$newattrs['tf:lastfrag'];
+        
+        if (array_key_exists('tf:lastfrag', $ret)) {
+            $ret['tf:lastfrag'] = ($attrs['tf:lastfrag']??'')." ".($ext_attrs['tf:lastfrag']??'');
         }
-        return $newattrs;
+        return $ret;
     }
     /**
      */
@@ -169,17 +171,18 @@ class Helper
         foreach ($tagStack as $tag) {
             $id = '';
             $class = '';
-            if ($tag['id']) {
+            $index='';
+            if (isset($tag['id'])) {
                 $id = "#".$tag['id'];
             }
-            if ($tag['class']) {
+            if (isset($tag['class'])) {
                 $class = ".".str_replace(' ', '.', $tag['class']);
                 //$class=implode(".",self::SplitClass($tag['class']));
             }
-            if ($tag["\ntagname"]) {
-                $index = "<sup>".$tag["\ntf index"]."</sup>";
+            if (isset($tag["\ntagname"])) {
+                $index = "<sup>".($tag["\ntf index"]??'')."</sup>";
             }
-            $str .= "$index".$tag["\ntagname"]."$id$class";
+            $str .= "$index".($tag["\ntagname"]??'')."$id$class";
         }
         return $str;
     }

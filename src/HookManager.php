@@ -7,6 +7,8 @@ namespace TagFeather;
 
 class HookManager
 {
+    use SingletonEx;
+
     /** @ use in  {@link add_parsehook() } */
     const PARSEHOOK_EXIST = 2;
     /** use in  @see reg_parsephook */

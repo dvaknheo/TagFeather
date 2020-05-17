@@ -5,7 +5,7 @@
  */
 namespace TagFeather;
 
-class Selector
+class Selector // @codeCoverageIgnoreStart
 {
     public $objtable = array();
     private $compiled_selector = array();
@@ -167,4 +167,4 @@ class Selector
             return $matches[0];
         }
     }
-}
+} // @codeCoverageIgnoreEnd

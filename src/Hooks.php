@@ -475,7 +475,7 @@ class Hooks
         break;
         case 'text':
         default:
-            TF_Builder::SetTagText($attrs, $cmd);//$attrs['parser text']=$cmd;
+            Builder::SetTagText($attrs, $cmd);//$attrs['parser text']=$cmd;
         }
         
         return $attrs;

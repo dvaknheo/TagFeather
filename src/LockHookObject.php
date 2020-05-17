@@ -5,7 +5,7 @@
  */
 namespace TagFeather;
 
-class LockHookObject extends HookObjectBase
+class LockHookObject extends HookObjectBase // @codeCoverageIgnoreStart
 {
     public $lockfile = '';
     protected $hooktypes = array('postbuild','error','unreg');
@@ -70,4 +70,4 @@ class LockHookObject extends HookObjectBase
         ignore_user_abort($this->last_ignore);
         return $error;
     }
-}
+} // @codeCoverageIgnoreEnd
