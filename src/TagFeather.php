@@ -60,36 +60,10 @@ class TagFeather extends Builder
         $this->source = $this->options['source'];
         $this->dest = $this->options['dest'];
         $this->is_forcebuild = $this->options['is_forcebuild'];
+        $this->cache_dir = '';
+        $this->template_dir = '';
         
         return $this;
-    }
-    /**
-     * Set the cache directory
-     * @param string $cache_dir
-     * @return void
-     */
-    public function set_cache_dir($cache_dir)
-    {
-        if (!$cache_dir) {
-            $this->cache_dir = '';
-            return;
-        }
-        $cache_dir = rtrim($cache_dir, '/').'/';
-        $this->cache_dir = $cache_dir;
-    }
-    /**
-     * Set the template directory
-     * @param string $template_dir
-     * @return void
-     */
-    public function set_template_dir($template_dir)
-    {
-        if (!$template_dir) {
-            $this->template_dir = '';
-            return;
-        }
-        $template_dir = rtrim($template_dir, '/').'/';
-        $this->template_dir = $template_dir;
     }
     ///////////////////////////////////////////////////////////////////////////
     /** add struct file to build
@@ -150,16 +124,6 @@ class TagFeather extends Builder
         if ($encode) {
             $filename = html_entity_decode($filename);
         }
-        if ($this->safebuild_mode) {
-            $thefile = $this->template_dir.basename($filename);
-            if (!is_file($thefile)) {
-                return '';
-            } //  ../x.php
-            if (!file_exists($thefile)) {
-                return '';
-            }
-            return  $thefile;
-        }
         $flag = preg_match('/^(\/|\\|([A-Za-z]:))/', $filename, $match);
         if (!$flag) {
             $filename = $this->template_dir.$filename;
@@ -198,11 +162,11 @@ class TagFeather extends Builder
             'tagend' => [],
             
             'text' => [],
-            'asp' => array(),
-            'pi' => array(),
-            'comment' => array(),
-            'notation' => array(),
-            'cdata' => array(),
+            'asp' => [],
+            'pi' => [],
+            'comment' => [],
+            'notation' => [],
+            'cdata' => [],
             ////
             'modifier' => [],
             'ssi' => [],
@@ -306,28 +270,25 @@ class TagFeather extends Builder
         $this->_reg($build_hooks);
         
         foreach ($this->hookmanager->parsehooks as $hooktype => $blank) {
-            $this->hookmanager->add_parsehook(['TF_Hooks','all_quick_function'], $hooktype);
+            $this->hookmanager->add_parsehook([Hooks::class,'all_quick_function'], $hooktype);
+        }
+        foreach ($this->hookmanager->parsehooks as $hooktype => $blank) {
+            $this->hookmanager->add_parsehook([FileHooks::class,'all_quick_function'], $hooktype);
         }
         //////////////////////////
         $quick = array(
-            'ssidel' => array(),
-            'showonce' => array(),
-            'rewriteall' => array(),
-            'byhref' => array(),
-            'byvisible' => array(),
-            'bycookie' => array(),
-            'bind' => array(),
-            'phplang' => array(),
-            'textmap' => array(),
-            'attrmap' => array(),
+            'ssidel' => [],
+            'showonce' => [],
+            'rewriteall' => [],
+            'byhref' => [],
+            'byvisible' => [],
+            'bycookie' => [],
+            'bind' => [],
+            'phplang' => [],
+            'textmap' => [],
+            'attrmap' => [],
         );
         $this->runtime = array_merge($this->runtime, $quick);
-        
-        //$headfoot=new TF_HeadFootHook();
-        //$this->reg_hookobject($headfoot);
-        
-        //$autowrap= new TF_AutowrapHook();
-        //$this->reg_hookobject($autowrap);
     }
     protected function _reg($names, $the_type = false)
     {

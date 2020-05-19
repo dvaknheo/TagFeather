@@ -114,7 +114,7 @@ class HookManager
         if (!$insertbefore) {
             $newhooks[$hookname] = $callback;
         }
-        $keys = array_keys($this->parsehooks[$hooktype]);
+        $keys = array_keys($this->parsehooks[$hooktype]??[]);
         foreach ($keys as $key) {
             if ($insertbefore == $key && $insertbefore) {
                 $newhooks[$hookname] = $callback;
@@ -245,7 +245,8 @@ class HookManager
      */
     public function call_oneparsehook($hookname, $hooktype, $arg)
     {
-        $callback = $this->parsehooks[$hooktype][$hookname];
+        $callback = $this->parsehooks[$hooktype][$hookname]??null;
+        if($callback===null){return;}
         return call_user_func($callback, $arg, $this, $hooktype);
     }
     /**
@@ -258,7 +259,7 @@ class HookManager
     public function disable_hook($hookname, $hooktype, $disable = true)
     {
         if ($disable) {
-            $callback = $this->parsehooks[$hooktype][$hookname];
+            $callback = $this->parsehooks[$hooktype][$hookname]??null;
             if (!$callback) {
                 return false;
             }
@@ -270,13 +271,6 @@ class HookManager
             $key = "$hooktype\n$hookname";
             unset($this->disabledparsehooks[$key]);
         }
-    }
-    /** regist a hook object,for more see TF_HookObjectBase
-     * @param object $hookobj the hookobject
-     */
-    public function reg_hookobject($hookobj)
-    {
-        $hookobj->reg($this, $callback, 'reg');
     }
     /** Just as blank hook;
      *
