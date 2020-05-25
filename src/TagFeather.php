@@ -57,8 +57,8 @@ class TagFeather extends Builder
     {
         $this->options = array_intersect_key(array_replace_recursive($this->options, $options) ?? [], $this->options);
         
-        $this->source = $this->options['source'];
-        $this->dest = $this->options['dest'];
+        $this->source = $this->options['path_source'];
+        $this->dest = $this->options['path_dest'];
         $this->is_forcebuild = $this->options['is_forcebuild'];
         $this->cache_dir = '';
         $this->template_dir = '';
@@ -115,6 +115,10 @@ class TagFeather extends Builder
         fclose($handle);
         
         return $this->cache_dir.$this->dest;
+    }
+    public function build($file)
+    {
+        return;
     }
     /**
      *

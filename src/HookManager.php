@@ -36,12 +36,6 @@ class HookManager
     public function __construct()
     {
     }
-    /** Destructor */
-    public function __destruct()
-    {
-        $arg = true;
-        $this->call_parsehooksbytype('unreg', $arg, false);
-    }
     /**
      * get hookname by a callback; serialize callback
      *
@@ -52,17 +46,16 @@ class HookManager
     public function get_hooknamebycallback($callback, $overfollow = true)
     {
         if (!is_array($callback)) {
-            $hookname = $callback;
-        } else {
-            if (is_string($callback[0])) {
-                $hookname = $callback[0]."::".$callback[1];
-            } else {
-                $hookname = '$'.get_class($callback[0]).'->'.$callback[1];
-                if (!$overfollow) {
-                    $this->objectcount++;
-                    $hookname = $hookname.'#'.$this->objectcount;
-                }
-            }
+            return $callback;
+        }
+        if (is_string($callback[0])) {
+            $hookname = $callback[0]."::".$callback[1];
+            return $hookname;
+        }
+        $hookname = '$'.get_class($callback[0]).'->'.$callback[1];
+        if (!$overfollow) {
+            $this->objectcount++;
+            $hookname = $hookname.'#'.$this->objectcount;
         }
         return $hookname;
     }
@@ -189,14 +182,14 @@ class HookManager
     public function get_parsehook($hookname, $hooktype = false)
     {
         if ($hooktype) {
-            return $this->parsehooks[$hooktype][$hookname];
-        } else {
-            foreach ($this->parsehooks as $hooktype => $hooks) {
-                if (isset($hooks[$hookname])) {
-                    return $this->parsehooks[$hooktype][$hookname];
-                }
+            return $this->parsehooks[$hooktype][$hookname]??null;
+        }
+        foreach ($this->parsehooks as $hooktype => $hooks) {
+            if (isset($hooks[$hookname])) {
+                return $this->parsehooks[$hooktype][$hookname];
             }
         }
+        
         return null;
     }
 
@@ -218,7 +211,7 @@ class HookManager
      */
     public function call_parsehooksbytype($hooktype, $arg, $queque_mode = false, $caller = null)
     {
-        $hooks = $this->parsehooks[$hooktype];//if(!is_array($this->parsehooks))var_dump($this->parsehooks);
+        $hooks = $this->parsehooks[$hooktype] ?? [];
         $keys = array_keys($hooks);
         $this->stop_hooking = false;
         if (!$queque_mode) {
@@ -267,8 +260,9 @@ class HookManager
             $this->disabledparsehooks[$key] = $callback;
             $this->parsehooks[$hooktype][$hookname] = array( __CLASS__,'BlankHook');
         } else {
-            $this->parsehooks[$hooktype][$hookname] = $this->disabledparsehooks[$key] = $callback;
             $key = "$hooktype\n$hookname";
+            $callback = $this->parsehooks[$hooktype][$hookname]??null;
+            $this->parsehooks[$hooktype][$hookname] = $this->disabledparsehooks[$key] = $callback;
             unset($this->disabledparsehooks[$key]);
         }
     }
