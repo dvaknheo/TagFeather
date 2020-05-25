@@ -635,7 +635,7 @@ class Hooks
         }
         if ($attrs['tf:head']) {
             $filename = $attrs['tf:head'];
-            $filename = $tf->get_abspath($filename, true);
+            $filename = $tf->get_abspath($filename);
             $data = ($filename)?file_get_contents($filename):'';
             $id = uniqid();
             $tf->runtime['ssidel'][] = $id;
@@ -657,7 +657,7 @@ class Hooks
         }
         if ($attrs['tf:foot']) {
             $filename = $attrs['tf:foot'];
-            $filename = $tf->get_abspath($filename, true);
+            $filename = $tf->get_abspath($filename);
             $data = ($filename)?file_get_contents($filename):'';
             $id = uniqid();
             $tf->runtime['ssidel'][] = $id;
@@ -874,7 +874,7 @@ class Hooks
             return $attrs;
         }
         $filename = $attrs['tf:struct'];
-        $filename = $tf->get_abspath($filename, true);
+        $filename = $tf->get_abspath($filename);
         $data = ($filename)?file_get_contents($filename):'';
 
         $tf->addTextToParse($data);
@@ -1209,7 +1209,7 @@ class Hooks
     protected static function InsertDataAndFile($tf, $data, $filename)
     {
         if ($filename) {
-            $filename = $tf->get_abspath($filename, true);
+            $filename = $tf->get_abspath($filename);
             $data = file_get_contents($filename);
         } else {
             $tf->parser->current_line -= substr_count($data, "\n");
@@ -1327,8 +1327,9 @@ class Hooks
     /** ssi:noparsebegin ssi:noparsebegin ssi:noparseend */
     public static function ssi_noparse($attrs, $tf, $hooktype)
     {
+        if(!isset()
         if ('noparseend' == $attrs['#']) {
-            return array();
+            return [];
         }
         if ('noparsebegin' != $attrs['#']) {
             return $attrs;
@@ -1347,7 +1348,7 @@ class Hooks
         $text = substr($data, 0, $pos);
         $tf->parser->data = substr($data, $pos + strlen("-->"));
         $tf->parser->current_line += substr_count($text, "\n");
-        return array();
+        return [];
     }
     /** ssi:appendtoparse */
     public static function ssi_appendtoparse($attrs, $tf, $hooktype)
@@ -1411,7 +1412,7 @@ class Hooks
         };
         $str = Helper::UniqString($id)."_end";
         $tf->addTextToParse($str);
-        return array();
+        return [];
     }
     /** ssi:tagbegin */
     public static function ssi_tagbegin($attrs, $tf, $hooktype)
@@ -1422,7 +1423,7 @@ class Hooks
         unset($attrs['#']);
         $tf->tagStack[] = $tf->hookmanager->call_parsehooksbytype('tagbegin', $attrs, true);
         
-        return array();
+        return [];
     }
     /** ssi:tagend */
     public static function ssi_tagend($attrs, $tf, $hooktype)
@@ -1437,7 +1438,7 @@ class Hooks
         $keeptext = (!in_array($newattrs["\ntagname"], $tf->parser->single_tag))?true:false;
         $text = TF_Builder::TagToText($newattrs, "\nfrag", $keeptext);
         $tf->addLastTagText($text);
-        return array();
+        return [];
     }
     /** ssi:tag */
     public static function ssi_tag($attrs, $tf, $hooktype)
@@ -1450,7 +1451,7 @@ class Hooks
         $attrs['#'] = 'tagend';
         self::ssi_tagend($attrs, $tf, $hooktype);
         
-        return array();
+        return [];
     }
     ///////////////////////////////////////////////////////////////////////////
     public static function text_phplang($text, $tf, $hooktype)

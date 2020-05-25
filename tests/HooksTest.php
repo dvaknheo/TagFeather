@@ -9,7 +9,7 @@ class HooksTest extends \PHPUnit\Framework\TestCase
         \MyCodeCoverage::G()->begin(Hooks::class);
         
         //code here
-        
+        $this->do_ssi();
         \MyCodeCoverage::G()->end(Hooks::class);
         $this->assertTrue(true);
         /*
@@ -82,6 +82,10 @@ class HooksTest extends \PHPUnit\Framework\TestCase
     }
     protected function do_ssi()
     {
+        $attrs=[];
+        $hooktype='';
+        $tf=new FakeTF();
+        
         Hooks::ssi_noparse($attrs,$tf,$hooktype);
         Hooks::ssi_appendtoparse($attrs,$tf,$hooktype);
         Hooks::ssi_appendtotext($attrs,$tf,$hooktype);
@@ -92,7 +96,7 @@ class HooksTest extends \PHPUnit\Framework\TestCase
         Hooks::ssi_tag($attrs,$tf,$hooktype);
     }
 }
-class FackTF
+class FakeTF
 {
     public $runtime=[];
 }

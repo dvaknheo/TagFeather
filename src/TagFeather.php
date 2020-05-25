@@ -40,18 +40,127 @@ class TagFeather extends Builder
     public $struct_files = array();
     /** @var int instruct*/
     public $in_struct = 0;
-    //$tf->runtime['structendsig']
 
-    
     /** @var TF_Builder builder*/
     public $builder = null;
     /** @var TF_HookMangager hookmanager*/
     public $hookmanager = null;
     /** @var TF_Parser parser link to builder->parser */
     public $parser = null;
-    /** @var TF_Builder builder*/
-    public $seletor = null;
     
+    protected $build_file_hooks = [
+        'modifier_time',
+        'modifier_filename',
+        
+        'error_tagfeather',
+        'error_struct',
+        
+        'prebuild_signature',
+        'prebuild_commitfirsttag',
+        'prebuild_struct',
+        
+        'postbuild_signature',
+        'postbuild_unmatch',
+        'postbuild_ssidel',
+        'postbuild_bind',
+    ];
+    protected $build_hooks = [
+        'notation_doctypeshowonce',
+        'pi_tf_outblock',
+        'pi_php_shortag',
+        'comment_ssi',
+        
+        'tagbegin_tf_init',
+        'tagbegin_safe',
+        'tagbegin_struct',
+        'tagbegin_showstruct',
+        'tagbegin_tochildren',
+        'tagbegin_inner_waitforwrap',
+        'tagbegin_quick',
+        'tagbegin_selector',
+        'tagbegin_toparent',
+        'tagbegin_byhref',
+        'tagbegin_byvisible',
+        'tagbegin_bycookie',
+        'tagbegin_pure',
+        'tagbegin_inserttoparse',
+        
+        'tagend_tf_final',
+        'tagend_meta_once',
+        'tagend_delheadfoot',
+        'tagend_headfoot',
+        'tagend_delattrs',
+        'tagend_rewrite',
+        'tagend_over',
+        
+        'tagend_showstruct',
+        'tagend_struct',
+        
+        'tagend_bindas',
+        'tagend_bindwith',
+        'tagend_bindto',
+        'tagend_rewriteall',
+        'tagend_appendtoparse',
+        
+        'tagend_showonce',
+        
+        'tagend_phpheredoc',
+        'tagend_phpincmap',
+        'tagend_phplang',
+        
+        'tagend_inner_waitforwrap',
+        'tagend_wrap',
+        'tagend_bindmap',
+        'tagend_textmap',
+        'tagend_attrmap',
+        
+        
+        'text_phplang',	//TODO be a hook object.
+        'text_textmap',
+        'text_bycookie',
+        
+        'ssi_noparse',
+        'ssi_appendtoparse',
+        'ssi_appendtotext',
+        'ssi_delbegin',
+        'ssi_delend',
+        'ssi_tagbegin',
+        'ssi_tagend',
+        'ssi_tag',
+        'ssi_include',
+    ];
+    protected $ext_parsehooks = [
+        'unreg' => [],
+        'error' => [],
+        
+        'prebuild' => [],
+        'postbuild' => [],
+        'tagbegin' => [],
+        'tagend' => [],
+        
+        'text' => [],
+        'asp' => [],
+        'pi' => [],
+        'comment' => [],
+        'notation' => [],
+        'cdata' => [],
+        ////
+        'modifier' => [],
+        'ssi' => [],
+    ];
+    //@override
+    public $runtime=[
+            'ssidel' => [],
+            'showonce' => [],
+            'rewriteall' => [],
+            'byhref' => [],
+            'byvisible' => [],
+            'bycookie' => [],
+            'bind' => [],
+            'phplang' => [],
+            'textmap' => [],
+            'attrmap' => [],
+    ];
     ///////////////////////////////////////////////////////////////////////////
     public function init(array $options, object $context = null)
     {
@@ -120,14 +229,8 @@ class TagFeather extends Builder
     {
         return;
     }
-    /**
-     *
-     */
-    public function get_abspath($filename, $encode = false)
+    public function get_abspath($filename)
     {
-        if ($encode) {
-            $filename = html_entity_decode($filename);
-        }
         $flag = preg_match('/^(\/|\\|([A-Za-z]:))/', $filename, $match);
         if (!$flag) {
             $filename = $this->template_dir.$filename;
@@ -152,161 +255,34 @@ class TagFeather extends Builder
     public function __construct()
     {
         parent::__construct();
-        
         $this->hookmanager = new HookManager();
-        $this->selector = new Selector();
-        
-        $ext_parsehooks = array(
-            'unreg' => [],
-            'error' => [],
-            
-            'prebuild' => [],
-            'postbuild' => [],
-            'tagbegin' => [],
-            'tagend' => [],
-            
-            'text' => [],
-            'asp' => [],
-            'pi' => [],
-            'comment' => [],
-            'notation' => [],
-            'cdata' => [],
-            ////
-            'modifier' => [],
-            'ssi' => [],
-        );
-        $this->hookmanager->parsehooks = $ext_parsehooks;
-        
-        //override Builder;
-        $this->setCallback([$this->hookmanager,'call_parsehooksbytype']);
-        
+
+        $this->hookmanager->parsehooks = $this->ext_parsehooks;
         $this->hookmanager->manager_callback = $this;
         
-        $this->initHooks();
-    }
-    /**
-     * init hooks;
-     */
-    protected function initHooks()
-    {
-        $build_hooks = [
-            'modifier_time',
-            'modifier_filename',
-            
-            'error_tagfeather',
-            'error_struct',
-            
-            'prebuild_signature',
-            'prebuild_commitfirsttag',
-            'prebuild_struct',
-            
-            'postbuild_signature',
-            'postbuild_unmatch',
-            'postbuild_ssidel',
-            'postbuild_bind',
-            
-            'notation_doctypeshowonce',
-            'pi_tf_outblock',
-            'pi_php_shortag',
-            'comment_ssi',
-            
-            'tagbegin_tf_init',
-            'tagbegin_safe',
-            'tagbegin_struct',
-            'tagbegin_showstruct',
-            'tagbegin_tochildren',
-            'tagbegin_inner_waitforwrap',
-            'tagbegin_quick',
-            'tagbegin_selector',
-            'tagbegin_toparent',
-            'tagbegin_byhref',
-            'tagbegin_byvisible',
-            'tagbegin_bycookie',
-            'tagbegin_pure',
-            'tagbegin_inserttoparse',
-            
-            'tagend_tf_final',
-            'tagend_meta_once',
-            'tagend_delheadfoot',
-            'tagend_headfoot',
-            'tagend_delattrs',
-            'tagend_rewrite',
-            'tagend_over',
-            
-            'tagend_showstruct',
-            'tagend_struct',
-            
-            'tagend_bindas',
-            'tagend_bindwith',
-            'tagend_bindto',
-            'tagend_rewriteall',
-            'tagend_appendtoparse',
-            
-            'tagend_showonce',
-            
-            'tagend_phpheredoc',
-            'tagend_phpincmap',
-            'tagend_phplang',
-            
-            'tagend_inner_waitforwrap',
-            'tagend_wrap',
-            'tagend_bindmap',
-            'tagend_textmap',
-            'tagend_attrmap',
-            
-            
-            'text_phplang',	//TODO be a hook object.
-            'text_textmap',
-            'text_bycookie',
-            
-            'ssi_noparse',
-            'ssi_appendtoparse',
-            'ssi_appendtotext',
-            'ssi_delbegin',
-            'ssi_delend',
-            'ssi_tagbegin',
-            'ssi_tagend',
-            'ssi_tag',
-            'ssi_include',
-        ];
-        
-        
-        $this->_reg($build_hooks);
-        
+        foreach ($this->build_file_hooks as $hookname) {
+            $a = explode('_', $hookname);
+            $hooktype = array_shift($a);
+            $this->hookmanager->add_parsehook([FileHooks::class,$hookname], $hooktype);
+        }
+        foreach ($this->build_hooks as $hookname) {
+            $a = explode('_', $hookname);
+            $hooktype = array_shift($a);
+            $this->hookmanager->add_parsehook([Hooks::class,$hookname], $hooktype);
+        }
         foreach ($this->hookmanager->parsehooks as $hooktype => $blank) {
             $this->hookmanager->add_parsehook([Hooks::class,'all_quick_function'], $hooktype);
         }
         foreach ($this->hookmanager->parsehooks as $hooktype => $blank) {
             $this->hookmanager->add_parsehook([FileHooks::class,'all_quick_function'], $hooktype);
         }
-        //////////////////////////
-        $quick = array(
-            'ssidel' => [],
-            'showonce' => [],
-            'rewriteall' => [],
-            'byhref' => [],
-            'byvisible' => [],
-            'bycookie' => [],
-            'bind' => [],
-            'phplang' => [],
-            'textmap' => [],
-            'attrmap' => [],
-        );
-        $this->runtime = array_merge($this->runtime, $quick);
-    }
-    protected function _reg($names, $the_type = false)
-    {
-        foreach ($names as $hookname) {
-            if (!$the_type) {
-                $a = explode('_', $hookname);
-                $hooktype = array_shift($a);
-            } else {
-                $hooktype = $the_type;
-            }
-            $this->hookmanager->add_parsehook(array('Hooks',$hookname), $hooktype);
-        }
-    }
+        ////
+                
+        //override Builder;
+        $this->setCallback([$this->hookmanager,'call_parsehooksbytype']);
+        
 
+    }
     /**
     */
     public function display($filename = "", $structfile = "")
