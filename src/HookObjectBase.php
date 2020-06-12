@@ -32,7 +32,7 @@ class HookObjectBase
             $hookmanager->add_parsehook(array(&$this,$thehooktype), $thehooktype, '', $hookname);
             $hooks[$thehooktype] = $hookname;
         }
-        return hookmanager;
+        return $hookmanager;
     }
     public function unreg($arg = false, $tf = null, $hooktype = 'unreg')
     {

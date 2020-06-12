@@ -66,7 +66,7 @@ class Hooks
         $tf->is_build_error = true;
         $tf->build_error_msg = $build_error_msg;
         $tf->parser->data = ""; // to stop next paser;
-        $tf->hookmanager->stop_nexthooks();
+        HookManager::G()->stop_nexthooks();
         return array();
     }
     
@@ -158,7 +158,7 @@ class Hooks
                 TF_Builder::SetTagText($parent, rtrim(TF_Builder::GetTagText($parent)));
             }
             $attrs = array();
-            $tf->hookmanager->stop_nexthooks();
+            HookManager::G()->stop_nexthooks();
         }
         
         return $attrs;
@@ -468,7 +468,7 @@ class Hooks
         $flag = false;
         foreach ($keys_to_call as $key => $hookname) {
             if (array_key_exists($key, $attrs)) {
-                $callback = $tf->hookmanager->parsehooks['tagbegin'][$hookname];
+                $callback = HookManager::G()->parsehooks['tagbegin'][$hookname];
                 $attrs = call_user_func($callback, $attrs, $tf, 'tagend');
             }
         }
@@ -553,13 +553,13 @@ class Hooks
                 if ($header == substr($cutfoot, 0, strlen($header))) {
                     //TODO  call ASP/PI HOOK ON $cutfoot;
                     if ($attrs['tf:wrap'] == 'pi') {
-                        $cutfoot = $tf->hookmanager->call_parsehooksbytype('pi', $cutfoot, false);
+                        $cutfoot = HookManager::G()->call_parsehooksbytype('pi', $cutfoot, false);
                     }
                     if ($attrs['tf:wrap'] == 'asp') {
-                        $cutfoot = $tf->hookmanager->call_parsehooksbytype('asp', $cutfoot, false);
+                        $cutfoot = HookManager::G()->call_parsehooksbytype('asp', $cutfoot, false);
                     }
                     if ($attrs['tf:wrap'] == 'comment') {
-                        $cutfoot = $tf->hookmanager->call_parsehooksbytype('comment', $cutfoot, false);
+                        $cutfoot = HookManager::G()->call_parsehooksbytype('comment', $cutfoot, false);
                     }
                     //$parser->current_line=substr_count($text,"\n");
                     $tf->parser->data = substr($text, $pos);
@@ -1033,7 +1033,7 @@ class Hooks
         
         if ("tagbegin" == $hooktype) {
             if (!$tf->runtime['tagbegin_bycookie']) {
-                $tf->hookmanager->add_parsehook(array("TF_Hooks","tagbegin_bycookie"), 'tagend');
+                HookManager::G()->add_parsehook([static::class,"tagbegin_bycookie"], 'tagend');
                 $tf->runctime['tagbegin_bycookie'] = true;
             }
             return $attrs;
@@ -1051,7 +1051,7 @@ class Hooks
     {
         if ("tagbegin" == $hooktype) {
             if (!$tf->runtime['tagbegin_byvisible']) {
-                $tf->hookmanager->add_parsehook(array("TF_Hooks","tagbegin_byvisible"), 'tagend');
+                HookManager::G()->add_parsehook(array("TF_Hooks","tagbegin_byvisible"), 'tagend');
                 $tf->runctime['tagbegin_byvisible'] = true;
             }
             return $attrs;
@@ -1116,7 +1116,7 @@ class Hooks
     {
         if ("tagbegin" == $hooktype) {
             if (!$tf->runtime['tagbegin_toparent']) {
-                $tf->hookmanager->add_parsehook(array("TF_Hooks","tagbegin_toparent"), 'tagend');
+                HookManager::G()->add_parsehook(array("TF_Hooks","tagbegin_toparent"), 'tagend');
                 $tf->runctime['tagbegin_toparent'] = true;
             }
             return $attrs;
@@ -1161,7 +1161,7 @@ class Hooks
         }
         if ("tagbegin" == $hooktype) {
             if (!$tf->runtime['tagbegin_byhref']) {
-                $tf->hookmanager->add_parsehook(array("TF_Hooks","tagbegin_byhref"), 'tagend');
+                HookManager::G()->add_parsehook(array("TF_Hooks","tagbegin_byhref"), 'tagend');
                 $tf->runctime['tagbegin_byhref'] = true;
             }
             return $attrs;
@@ -1249,16 +1249,16 @@ class Hooks
                 unset($tf->runtime['in_pure_showserver']);
                 unset($attrs['tf:pure']);
                 foreach ($purehooktypes as $thehooktype) {
-                    $tf->hookmanager->parsehooks[$thehooktype] = $tf->runtime['pure_savedhooktypes'][$thehooktype];
+                    HookManager::G()->parsehooks[$thehooktype] = $tf->runtime['pure_savedhooktypes'][$thehooktype];
                 }
                 //TODO
-                $attrs = $tf->hookmanager->call_parsehooksbytype($hooktype, $attrs, false);
+                $attrs = HookManager::G()->call_parsehooksbytype($hooktype, $attrs, false);
                 
                 $keeptext = (!in_array($attrs["\ntagname"], $tf->parser->single_tag))?true:false;
                 $text = Builder::TagToText($attrs, "\nfrag", $keeptext);
                 $tf->addLastTagText($text);
                 
-                $tf->hookmanager->stop_nexthooks();
+                HookManager::G()->stop_nexthooks();
                 $attrs = array();
                 return $attrs;
             }
@@ -1272,10 +1272,10 @@ class Hooks
                     $tf->runtime['in_pure'] = $current_level;
                     $tf->runtime['pure_savedhooktypes'] = array();
                     foreach ($purehooktypes as $thehooktype) {
-                        $tf->runtime['pure_savedhooktypes'][$thehooktype] = $tf->hookmanager->parsehooks[$thehooktype];
-                        $tf->hookmanager->parsehooks[$thehooktype] = array("TF_Hooks::tagbegin_pure" => array("TF_Hooks" ,"tagbegin_pure"));
+                        $tf->runtime['pure_savedhooktypes'][$thehooktype] = HookManager::G()->parsehooks[$thehooktype];
+                        HookManager::G()->parsehooks[$thehooktype] = array("TF_Hooks::tagbegin_pure" => array("TF_Hooks" ,"tagbegin_pure"));
                     }
-                    //$tf->hookmanager->stop_nexthooks();
+                    //HookManager::G()->stop_nexthooks();
                 }
             }
         }
@@ -1292,14 +1292,14 @@ class Hooks
         if (!$flag) {
             return $comment;
         } else {
-            $attrs = TF_XmlParser::ToAttrs($match[2], $match_byte,null, 0);
+            $attrs = XmlParser::ToAttrs($match[2], $match_byte,null, 0);
             $attrs['#'] = $match[1];
         }
         
-        $attrs = $tf->hookmanager->call_parsehooksbytype('ssi', $attrs);
+        $attrs = HookManager::G()->call_parsehooksbytype('ssi', $attrs);
         if (!$attrs) {
             // ssi effected;
-            $tf->hookmanager->stop_nexthooks();
+            HookManager::G()->stop_nexthooks();
             return '';
         }
         return $comment;
@@ -1321,13 +1321,12 @@ class Hooks
         }
         $phpfile = $tf->runtime['phpincmap'][$htmlfile];
         $tf->addTextToParse("<\x3fphp include(\"".addslashes($phpfile)."\"); \x3f>");
-        $tf->hookmanager->stop_nexthooks();
+        HookManager::G()->stop_nexthooks();
         return array();
     }
     /** ssi:noparsebegin ssi:noparsebegin ssi:noparseend */
     public static function ssi_noparse($attrs, $tf, $hooktype)
     {
-        if(!isset()
         if ('noparseend' == $attrs['#']) {
             return [];
         }
@@ -1421,7 +1420,7 @@ class Hooks
             return $attrs;
         }
         unset($attrs['#']);
-        $tf->tagStack[] = $tf->hookmanager->call_parsehooksbytype('tagbegin', $attrs, true);
+        $tf->tagStack[] = HookManager::G()->call_parsehooksbytype('tagbegin', $attrs, true);
         
         return [];
     }
@@ -1433,7 +1432,7 @@ class Hooks
         }
         
         $newattrs = array_pop($tf->tagStack);
-        $newattrs = $tf->hookmanager->call_parsehooksbytype('tagend', $newattrs, false);
+        $newattrs = HookManager::G()->call_parsehooksbytype('tagend', $newattrs, false);
         
         $keeptext = (!in_array($newattrs["\ntagname"], $tf->parser->single_tag))?true:false;
         $text = TF_Builder::TagToText($newattrs, "\nfrag", $keeptext);
@@ -1456,7 +1455,6 @@ class Hooks
     ///////////////////////////////////////////////////////////////////////////
     public static function text_phplang($text, $tf, $hooktype)
     {
-        //$tf->runtime['lang']=isset($tf->runtime['lang'])?$tf->runtime['lang']:array();
         $lang = $tf->runtime['phplang'];
         $text = str_replace(array_keys($lang), array_values($lang), $text);
         return $text;
@@ -1477,18 +1475,19 @@ class Hooks
         $flag = false;
         $str = '';
         foreach ($tf->runtime['bycookie'] as $key => $obj_assign) {
-            if (false !== strpos($text, $key)) {
-                if (array_key_exists('tf:bycookie_replace', $obj_assign)) {
-                    $flag = true;
-                    $str = $obj_assign['tf:bycookie_replace'];
-                    unset($obj_assign['tf:bycookie_replace']);
-                }
-                $parent = &$tf->tagStack[sizeof($tf->tagStack) - 1];
-                $parent = Helper::MergeAttrs($parent, $obj_assign);
-                if ($flag) {
-                    $flag = false;
-                    $text = substr_replace($text, $str, strlen($key));
-                }
+            if (false === strpos($text, $key)) {
+                continue;
+            }
+            if (array_key_exists('tf:bycookie_replace', $obj_assign)) {
+                $flag = true;
+                $str = $obj_assign['tf:bycookie_replace'];
+                unset($obj_assign['tf:bycookie_replace']);
+            }
+            $parent = &$tf->tagStack[sizeof($tf->tagStack) - 1];
+            $parent = Helper::MergeAttrs($parent, $obj_assign);
+            if ($flag) {
+                $flag = false;
+                $text = substr_replace($text, $str, strlen($key));
             }
         }
         return $text;

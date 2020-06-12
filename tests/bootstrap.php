@@ -1,5 +1,6 @@
 <?php
 require __DIR__ . '/../autoload.php';
+require __DIR__ . '/MyCodeCoverage.php';
 
 
 $c_args=[
@@ -36,121 +37,7 @@ function GetClassTestPath($class)
 }
 
 
-class MyCodeCoverage
-{
-    protected static function include_file($file)
-    {
-        return include $file;
-    }
-    public function createReport()
-    {
-        $path=realpath(__DIR__.'/../src');
-        $coverage = new \SebastianBergmann\CodeCoverage\CodeCoverage();
-        $coverage->filter()->addDirectoryToWhitelist($path);
 
-        $coverage->setTests(array(
-          'T' =>
-          array(
-            'size' => 'unknown',
-            'status' => -1,
-          ),
-        ));
-
-        $source=realpath(__DIR__.'/test_coveragedumps');
-        $directory = new \RecursiveDirectoryIterator($source, \FilesystemIterator::CURRENT_AS_PATHNAME | \FilesystemIterator::SKIP_DOTS);
-
-        $iterator = new \RecursiveIteratorIterator($directory);
-        $files = \iterator_to_array($iterator, false);
-        foreach ($files as $file) {
-            $coverage->merge(static::include_file($file));
-        }
-        $coverage->filter()->removeDirectoryFromWhitelist($path.'/SwooleHttpd');
-        $writer = new \SebastianBergmann\CodeCoverage\Report\Html\Facade;
-        $writer->process($coverage, __DIR__ . '/test_reports');
-    }
-    public static function G($object=null)
-    {
-        //Simplist
-        static $_instance;
-        $_instance=$object?:($_instance??new static);
-        return $_instance;
-    }
-    protected $coverage;
-    protected $test_class;
-    protected function setPath($path)
-    {
-        if (is_file($path)) {
-            $this->coverage->filter()->addFileToWhitelist($path);
-        } elseif (is_object($path)) {
-            $this->coverage->setFileter($path);
-        } else {
-            $this->coverage->filter()->addDirectoryToWhitelist($path);
-        }
-    }
-    public function classToPath($class)
-    {
-        $ref=new ReflectionClass($class);
-        return $ref->getFileName();
-    }
-    public function begin($class, $name='T')
-    {
-        $this->test_class=$class;
-        $this->coverage = new \SebastianBergmann\CodeCoverage\CodeCoverage();
-        $this->setPath($this->classToPath($class));
-        $this->coverage->start($name);
-    }
-    public function end()
-    {
-        $this->coverage->stop();
-        
-        $writer = new \SebastianBergmann\CodeCoverage\Report\PHP;
-        $path=substr(str_replace('\\', '/', $this->test_class), strlen('TagFeather\\'));
-        $path=__DIR__.'/test_coveragedumps/'.$path .'.php';
-        $writer->process($this->coverage, $path);
-        $this->coverage=null;
-        $this->test_class='';
-    }
-    
-    ///////////////////////
-    public function run($path, $name, $callback)
-    {
-        $this->begin($path, $name);
-        ($callback)($path, $name);
-        return $this->end();
-    }
-    public function merge($path, $name, $data_list)
-    {
-        $coverage =$this->coverage??new \SebastianBergmann\CodeCoverage\CodeCoverage;
-        $this->setPath($path);
-        foreach ($data_list as $data) {
-            $this->coverage->append($data, $name);
-        }
-    }
-    public function reportHtml($output_path)
-    {
-        $writer = new \SebastianBergmann\CodeCoverage\Report\Html\Facade;
-        $writer->process($this->coverage, $output_path);
-    }
-    public function report($output_path)
-    {
-        /*
-        $report = $this->coverage->getReport();
-        $t=$report->getClasses();
-        $ret=array_shift($t);
-        unset($ret['methods']);
-        var_dump( $ret );
-
-        return;
-        */
-        $writer = new \SebastianBergmann\CodeCoverage\Report\Text;
-        $x=$writer->process($this->coverage, $output_path);
-        echo $x;
-    }
-    public function clear()
-    {
-        $this->coverage=null;
-    }
-}
 class TestFileGenerator
 {
     public static function Run($source, $dest)

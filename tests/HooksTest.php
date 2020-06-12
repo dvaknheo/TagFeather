@@ -9,9 +9,8 @@ class HooksTest extends \PHPUnit\Framework\TestCase
         \MyCodeCoverage::G()->begin(Hooks::class);
         
         //code here
-        $this->do_ssi();
-        \MyCodeCoverage::G()->end(Hooks::class);
-        $this->assertTrue(true);
+        $this->do_text();
+        \MyCodeCoverage::G()->end();
         /*
         //Hooks::callback  by TF_Builder;
         Hooks::modifier_filename($is_build,$tf,$hooktype);
@@ -73,12 +72,14 @@ class HooksTest extends \PHPUnit\Framework\TestCase
     }
     protected function do_text()
     {
-        $hooktype='';
+        $hooktype='text';
         $tf=new FakeTF();
-        //$text=
+        $text="abc";
         Hooks::text_phplang($text,$tf,$hooktype);
+        $text="abc";
         Hooks::text_textmap($text,$tf,$hooktype);
-        Hooks::text_bycookie($text,$tf,$hooktype);
+        
+        //Hooks::text_bycookie($text,$tf,$hooktype);
     }
     protected function do_ssi()
     {
@@ -98,6 +99,9 @@ class HooksTest extends \PHPUnit\Framework\TestCase
 }
 class FakeTF
 {
-    public $runtime=[];
+    public $runtime=[
+        'phplang'=>['a'=>'Z'],
+        'textmap'=>['a'=>'b'],
+    ];
 }
 

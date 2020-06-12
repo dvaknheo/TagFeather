@@ -41,9 +41,21 @@ EOT;
             return $args;
         });
         echo $b->run($data);
+        echo "--------------------------------------------------\n\n\n\n";
         
-        \MyCodeCoverage::G()->end(Builder::class);
-        $this->assertTrue(true);
+        ///////////
+        
+$data=<<<EOT
+<!--#include virtual="/includes/header.html"-->
+EOT;
+        $b=new Builder();
+        $b->setCallback(function($hooktype, $args, $queque_mode,$tf){
+            var_dump($hooktype, $args, $queque_mode);
+            return $args;
+        });
+        echo $b->run($data);
+        
+        \MyCodeCoverage::G()->end();
     }
     protected function do_static()
     {
